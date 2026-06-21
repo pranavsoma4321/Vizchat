@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bot Templates | VizChat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky: #38bdf8; --sky-dark: #0ea5e9; --indigo: #6366f1; --indigo-mid: #4f46e5;
+      --emerald: #10b981; --amber: #f59e0b; --red: #ef4444; --purple: #a78bfa;
+      --pink: #ec4899;
+      --surface: #060b14; --s2: #0b1019; --s3: #101620; --s4: #161e2e;
+      --border: rgba(255,255,255,0.07); --border-mid: rgba(255,255,255,0.12);
+      --text: #eef5ff; --text-2: #7a90b4; --text-3: #3b4f6e;
+    }
+
+    html, body { background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    body { padding-top: 66px; min-height: 100vh; }
+
+    /* ── BG ── */
+    .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 50% at 10% 90%, rgba(56,189,248,0.07) 0%, transparent 55%),
+                  radial-gradient(ellipse 50% 45% at 90% 5%,  rgba(99,102,241,0.08) 0%, transparent 55%),
+                  radial-gradient(ellipse 45% 40% at 50% 50%, rgba(16,185,129,0.04) 0%, transparent 60%); }
+    .bg-grid { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 85% 85% at 50% 40%, black 20%, transparent 80%); }
+
+    /* ── Header ── */
+    header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(6,11,20,0.88); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--border); }
+    .hdr { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-box { width: 36px; height: 36px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px rgba(56,189,248,0.2), 0 6px 18px rgba(14,165,233,0.18); flex-shrink: 0; }
+    .logo-box svg { width: 18px; height: 18px; color: #fff; }
+    .logo-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.03em; color: var(--text); }
+    .logo-name span { color: var(--sky); }
+    .hdr-right { display: flex; align-items: center; gap: 8px; }
+    .btn-sm { padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-sky { background: var(--sky-dark); color: #fff; }
+    .btn-sky:hover { background: #0284c7; transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+
+    /* ── Main ── */
+    .main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 32px 24px 80px; }
+
+    /* ── Hero header ── */
+    .page-hero { text-align: center; padding: 20px 0 48px; }
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 7px; padding: 5px 13px; border-radius: 100px; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.18); font-size: 11px; color: var(--sky); font-weight: 500; letter-spacing: .07em; text-transform: uppercase; margin-bottom: 16px; }
+    .page-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sky); animation: pd 2s ease infinite; }
+    @keyframes pd { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(26px, 4vw, 46px); letter-spacing: -.04em; color: var(--text); margin-bottom: 14px; line-height: 1.08; }
+    .page-title .accent { background: linear-gradient(135deg, var(--sky) 10%, var(--indigo) 90%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .page-sub { font-size: 15px; color: var(--text-2); line-height: 1.7; max-width: 520px; margin: 0 auto 28px; font-weight: 300; }
+
+    /* ── Search & filter ── */
+    .filter-bar { display: flex; align-items: center; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+    .search-wrap { position: relative; }
+    .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-3); pointer-events: none; }
+    .search-input { padding: 10px 14px 10px 36px; background: var(--s2); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; width: 240px; transition: all .2s; }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: rgba(56,189,248,.4); width: 280px; }
+    .cat-btn { padding: 8px 16px; border-radius: 9px; background: var(--s2); border: 1px solid var(--border); color: var(--text-3); font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500; cursor: pointer; transition: all .2s; white-space: nowrap; }
+    .cat-btn.on { background: rgba(56,189,248,.09); color: var(--sky); border-color: rgba(56,189,248,.28); }
+    .cat-btn:hover:not(.on) { background: rgba(255,255,255,.05); color: var(--text-2); }
+
+    /* ── Templates grid ── */
+    .templates-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    @media(max-width:1100px){ .templates-grid{grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:680px){ .templates-grid{grid-template-columns:1fr} }
+
+    /* ── Template card ── */
+    .t-card { background: var(--s2); border: 1px solid var(--border); border-radius: 18px; padding: 24px; display: flex; flex-direction: column; gap: 0; position: relative; overflow: hidden; cursor: pointer; transition: all .28s; }
+    .t-card:hover { transform: translateY(-5px); border-color: var(--border-mid); box-shadow: 0 16px 36px rgba(0,0,0,0.3); }
+
+    /* Top glow accent */
+    .t-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 18px 18px 0 0; transition: opacity .3s; opacity: .6; }
+    .t-card:hover::before { opacity: 1; }
+    .tc-blue::before   { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+    .tc-purple::before { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .tc-green::before  { background: linear-gradient(90deg, #10b981, #34d399); }
+    .tc-red::before    { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .tc-amber::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .tc-indigo::before { background: linear-gradient(90deg, #6366f1, #818cf8); }
+
+    /* Hover glow background */
+    .t-card::after { content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity .3s; pointer-events: none; border-radius: 18px; }
+    .t-card:hover::after { opacity: 1; }
+    .tc-blue:hover::after   { background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(59,130,246,0.06) 0%, transparent 70%); }
+    .tc-purple:hover::after { background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(139,92,246,0.06) 0%, transparent 70%); }
+    .tc-green:hover::after  { background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 70%); }
+    .tc-red:hover::after    { background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(239,68,68,0.06) 0%, transparent 70%); }
+    .tc-amber:hover::after  { background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(245,158,11,0.06) 0%, transparent 70%); }
+    .tc-indigo:hover::after { background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(99,102,241,0.06) 0%, transparent 70%); }
+
+    /* Icon */
+    .t-icon { width: 50px; height: 50px; border-radius: 13px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; transition: transform .25s; position: relative; z-index: 1; }
+    .t-card:hover .t-icon { transform: scale(1.1); }
+    .t-icon svg { width: 24px; height: 24px; }
+    .ti-blue   { background: rgba(59,130,246,.12);  color: #60a5fa; }
+    .ti-purple { background: rgba(139,92,246,.12);  color: #a78bfa; }
+    .ti-green  { background: rgba(16,185,129,.12);  color: #34d399; }
+    .ti-red    { background: rgba(239,68,68,.12);   color: #f87171; }
+    .ti-amber  { background: rgba(245,158,11,.12);  color: #fbbf24; }
+    .ti-indigo { background: rgba(99,102,241,.12);  color: #818cf8; }
+
+    /* Category badge */
+    .t-cat { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px; font-size: 10px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; margin-bottom: 8px; position: relative; z-index: 1; }
+    .tcat-blue   { background: rgba(59,130,246,.1);  color: #93c5fd; border: 1px solid rgba(59,130,246,.2); }
+    .tcat-purple { background: rgba(139,92,246,.1);  color: #c4b5fd; border: 1px solid rgba(139,92,246,.2); }
+    .tcat-green  { background: rgba(16,185,129,.1);  color: #6ee7b7; border: 1px solid rgba(16,185,129,.2); }
+    .tcat-red    { background: rgba(239,68,68,.1);   color: #fca5a5; border: 1px solid rgba(239,68,68,.2); }
+    .tcat-amber  { background: rgba(245,158,11,.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+    .tcat-indigo { background: rgba(99,102,241,.1);  color: #a5b4fc; border: 1px solid rgba(99,102,241,.2); }
+
+    .t-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 6px; position: relative; z-index: 1; }
+    .t-desc { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 16px; flex: 1; position: relative; z-index: 1; }
+
+    /* Stats pills */
+    .t-stats { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 18px; position: relative; z-index: 1; }
+    .t-stat { display: flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 11.5px; color: var(--text-3); }
+
+    /* Sample data preview */
+    .t-preview { background: var(--s3); border-radius: 10px; padding: 10px 12px; margin-bottom: 16px; display: none; position: relative; z-index: 1; animation: fadeUp .25s ease; }
+    .t-preview.show { display: block; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .tp-label { font-size: 10px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 7px; }
+    .tp-row { display: flex; gap: 8px; overflow: hidden; }
+    .tp-cell { flex: 1; font-size: 11px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .tp-head { font-size: 10px; color: var(--text-3); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+    .tp-row-wrap { display: grid; gap: 4px; }
+    .tp-data-row { display: flex; gap: 8px; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+    .tp-data-row:last-child { border-bottom: none; }
+
+    /* Action row */
+    .t-footer { display: flex; gap: 7px; align-items: center; position: relative; z-index: 1; }
+    .t-explore-btn { flex: 1; padding: 11px; border-radius: 10px; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; position: relative; overflow: hidden; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; }
+    .t-explore-btn svg { width: 14px; height: 14px; }
+    .t-explore-btn .shine { position: absolute; top: 0; left: -100%; width: 55%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); transition: left .6s; }
+    .t-explore-btn:hover .shine { left: 160%; }
+    .t-explore-btn:hover { transform: translateY(-1px); }
+    .teb-blue   { background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; box-shadow: 0 4px 14px rgba(59,130,246,.2); }
+    .teb-blue:hover   { box-shadow: 0 6px 20px rgba(59,130,246,.3); }
+    .teb-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: #fff; box-shadow: 0 4px 14px rgba(139,92,246,.2); }
+    .teb-purple:hover { box-shadow: 0 6px 20px rgba(139,92,246,.3); }
+    .teb-green  { background: linear-gradient(135deg, #10b981, #059669); color: #fff; box-shadow: 0 4px 14px rgba(16,185,129,.2); }
+    .teb-green:hover  { box-shadow: 0 6px 20px rgba(16,185,129,.3); }
+    .teb-red    { background: linear-gradient(135deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 4px 14px rgba(239,68,68,.2); }
+    .teb-red:hover    { box-shadow: 0 6px 20px rgba(239,68,68,.3); }
+    .teb-amber  { background: linear-gradient(135deg, #f59e0b, #d97706); color: #fff; box-shadow: 0 4px 14px rgba(245,158,11,.2); }
+    .teb-amber:hover  { box-shadow: 0 6px 20px rgba(245,158,11,.3); }
+    .teb-indigo { background: linear-gradient(135deg, #6366f1, #4f46e5); color: #fff; box-shadow: 0 4px 14px rgba(99,102,241,.2); }
+    .teb-indigo:hover { box-shadow: 0 6px 20px rgba(99,102,241,.3); }
+
+    /* Preview toggle */
+    .t-peek-btn { width: 38px; height: 38px; border-radius: 9px; background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; flex-shrink: 0; }
+    .t-peek-btn:hover { background: rgba(255,255,255,.09); color: var(--text); }
+    .t-peek-btn svg { width: 15px; height: 15px; transition: transform .25s; }
+    .t-peek-btn.open svg { transform: rotate(180deg); }
+
+    /* ── No results ── */
+    .no-results { grid-column: 1/-1; text-align: center; padding: 56px 24px; background: var(--s2); border: 1px dashed var(--border); border-radius: 18px; }
+    .no-results svg { width: 40px; height: 40px; color: var(--text-3); margin: 0 auto 14px; display: block; }
+    .no-results h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 6px; }
+    .no-results p { font-size: 13px; color: var(--text-3); }
+
+    /* ── Bottom CTA ── */
+    .bottom-cta { margin-top: 56px; background: linear-gradient(135deg, rgba(56,189,248,.06), rgba(99,102,241,.05)); border: 1px solid rgba(56,189,248,.15); border-radius: 20px; padding: 40px 36px; text-align: center; position: relative; overflow: hidden; }
+    .bottom-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 60% 60% at 50% 100%, rgba(99,102,241,0.1) 0%, transparent 70%); pointer-events: none; }
+    .bottom-cta h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(20px, 2.5vw, 28px); letter-spacing: -.03em; color: var(--text); margin-bottom: 8px; position: relative; }
+    .bottom-cta p { font-size: 14px; color: var(--text-2); max-width: 420px; margin: 0 auto 24px; line-height: 1.65; position: relative; font-weight: 300; }
+    .cta-btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+    .cta-primary { padding: 12px 24px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border: none; border-radius: 11px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .2s; box-shadow: 0 4px 18px rgba(14,165,233,0.2); position: relative; overflow: hidden; }
+    .cta-primary:hover { opacity: .9; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14,165,233,0.3); }
+    .cta-primary .shine { position: absolute; top: 0; left: -100%; width: 55%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); transition: left .6s; }
+    .cta-primary:hover .shine { left: 160%; }
+    .cta-ghost { padding: 12px 24px; background: rgba(255,255,255,.04); border: 1px solid var(--border-mid); border-radius: 11px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: all .2s; }
+    .cta-ghost:hover { background: rgba(255,255,255,.08); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 11px; font-size: 13px; font-weight: 500; transform: translateY(80px); opacity: 0; transition: all .3s cubic-bezier(.22,1,.36,1); pointer-events: none; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-ok { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.25); color: #4ade80; }
+    .toast svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* Card entrance stagger */
+    .t-card { animation: fadeUp .4s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="hdr">
+      <a href="/home" class="logo">
+        <div class="logo-box"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+        <span class="logo-name">Viz<span>Chat</span></span>
+      </a>
+      <div class="hdr-right">
+        <a href="/bot_builder" class="btn-sm btn-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          Custom Bot
+        </a>
+        <a href="/home" class="btn-sm btn-sky">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Home
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- Hero -->
+    <div class="page-hero">
+      <div class="page-eyebrow"><span class="page-eyebrow-dot"></span>Ready-Made Datasets</div>
+      <h1 class="page-title">Pick a template,<br><span class="accent">start exploring instantly</span></h1>
+      <p class="page-sub">6 real-world datasets — upload in one click, then ask questions using natural language or voice. No setup needed.</p>
+
+      <!-- Filter bar -->
+      <div class="filter-bar">
+        <div class="search-wrap">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" class="search-input" id="searchInput" placeholder="Search templates…">
+        </div>
+        <button class="cat-btn on" data-cat="all">All</button>
+        <button class="cat-btn" data-cat="Business">Business</button>
+        <button class="cat-btn" data-cat="Education">Education</button>
+        <button class="cat-btn" data-cat="Science">Science</button>
+        <button class="cat-btn" data-cat="Health">Health</button>
+      </div>
+    </div>
+
+    <!-- Templates grid -->
+    <div class="templates-grid" id="templatesGrid">
+      <!-- Rendered by JS -->
+    </div>
+
+    <!-- Bottom CTA -->
+    <div class="bottom-cta">
+      <h3>Got your own data?</h3>
+      <p>Upload any CSV, Excel, or JSON file and chat with it in seconds — all running locally on your machine.</p>
+      <div class="cta-btns">
+        <a href="/bot_builder" class="cta-primary">
+          <div class="shine"></div>
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          Upload My Data
+        </a>
+        <a href="/assignments" class="cta-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Create Assignment
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast toast-ok" id="toast">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span id="toastMsg">Loading template…</span>
+  </div>
+
+<script>
+  // ── Template definitions ──────────────────
+  const templates = [
+    {
+      id: 'sales',
+      name: 'Sales Dashboard',
+      category: 'Business',
+      desc: 'Product sales, pricing & inventory across 8 categories. Great for finding trends and top performers.',
+      stats: ['100+ products', '₹28–₹500 price range', '8 categories'],
+      color: 'blue',
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>`,
+      previewKeys: ['product','category','price','quantity'],
+      data: [
+        {product:'Amul Milk 1L',category:'Dairy',price:50,quantity:500,brand:'Amul'},
+        {product:'Britannia Bread',category:'Bakery',price:35,quantity:300,brand:'Britannia'},
+        {product:'Maggi Noodles',category:'Instant Food',price:25,quantity:600,brand:'Maggi'},
+        {product:'Cadbury Chocolate',category:'Sweets',price:45,quantity:350,brand:'Cadbury'},
+        {product:'Sprite Bottle',category:'Beverages',price:40,quantity:400,brand:'Sprite'},
+        {product:'Haldiram Namkeen',category:'Snacks',price:100,quantity:150,brand:'Haldiram'},
+        {product:'Tropicana Juice',category:'Beverages',price:60,quantity:200,brand:'Tropicana'},
+        {product:'ITC Biscuits',category:'Snacks',price:30,quantity:400,brand:'ITC'},
+        {product:'Fortune Oil',category:'Oils',price:180,quantity:120,brand:'Fortune'},
+        {product:'Tata Salt',category:'Spices',price:28,quantity:700,brand:'Tata'}
+      ]
+    },
+    {
+      id: 'students',
+      name: 'Student Records',
+      category: 'Education',
+      desc: 'Class marks, attendance and grades across 8 subjects. Ideal for academic performance analysis.',
+      stats: ['50+ students', '8 subjects', 'Attendance 60–100%'],
+      color: 'purple',
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>`,
+      previewKeys: ['name','math','science','grade'],
+      data: [
+        {name:'Rohan Kumar',roll:'A001',english:85,math:92,science:88,attendance:'95%',grade:'A+'},
+        {name:'Priya Singh',roll:'A002',english:78,math:85,science:80,attendance:'92%',grade:'A'},
+        {name:'Raj Patel',roll:'A003',english:65,math:70,science:68,attendance:'80%',grade:'B'},
+        {name:'Neha Sharma',roll:'A004',english:90,math:88,science:91,attendance:'98%',grade:'A+'},
+        {name:'Amit Kumar',roll:'A005',english:72,math:78,science:75,attendance:'85%',grade:'B+'},
+        {name:'Sneha Gupta',roll:'A006',english:82,math:87,science:84,attendance:'96%',grade:'A'},
+        {name:'Varun Singh',roll:'A007',english:55,math:62,science:60,attendance:'70%',grade:'C'},
+        {name:'Ananya Rao',roll:'A008',english:88,math:90,science:89,attendance:'97%',grade:'A+'}
+      ]
+    },
+    {
+      id: 'experiment',
+      name: 'Lab Experiment',
+      category: 'Science',
+      desc: 'Temperature, pressure & reaction time measurements across 100 controlled trials. Perfect for statistical analysis.',
+      stats: ['100 measurements', '6 variables', 'Time series 10–60 min'],
+      color: 'green',
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>`,
+      previewKeys: ['trial','temperature','pressure','yield'],
+      data: [
+        {trial:1,temperature:25,pressure:101.3,reaction_time:12.5,ph:7.0,yield:95.2},
+        {trial:2,temperature:30,pressure:102.1,reaction_time:11.8,ph:7.1,yield:96.5},
+        {trial:3,temperature:35,pressure:103.2,reaction_time:10.9,ph:6.9,yield:97.1},
+        {trial:4,temperature:40,pressure:104.5,reaction_time:9.8,ph:6.8,yield:98.3},
+        {trial:5,temperature:45,pressure:105.8,reaction_time:8.5,ph:6.7,yield:99.2},
+        {trial:6,temperature:50,pressure:107.2,reaction_time:7.2,ph:6.5,yield:98.9},
+        {trial:7,temperature:55,pressure:108.9,reaction_time:6.1,ph:6.4,yield:97.8},
+        {trial:8,temperature:60,pressure:110.3,reaction_time:5.3,ph:6.2,yield:96.1}
+      ]
+    },
+    {
+      id: 'economic',
+      name: 'Economic Data',
+      category: 'Business',
+      desc: 'GDP, inflation and unemployment across 50+ countries from 2015–2025. Explore global economic patterns.',
+      stats: ['50+ countries', '2015–2025 data', '12 indicators'],
+      color: 'red',
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+      previewKeys: ['country','gdp','inflation','growth_rate'],
+      data: [
+        {country:'India',year:2023,gdp:3.73,inflation:6.8,unemployment:7.2,growth_rate:7.2},
+        {country:'China',year:2023,gdp:17.74,inflation:0.2,unemployment:4.1,growth_rate:5.2},
+        {country:'USA',year:2023,gdp:27.36,inflation:3.4,unemployment:3.8,growth_rate:2.5},
+        {country:'Japan',year:2023,gdp:4.23,inflation:3.3,unemployment:2.5,growth_rate:1.8},
+        {country:'Germany',year:2023,gdp:4.31,inflation:4.5,unemployment:2.6,growth_rate:-0.3},
+        {country:'UK',year:2023,gdp:3.33,inflation:4.0,unemployment:4.0,growth_rate:0.5},
+        {country:'Brazil',year:2023,gdp:2.13,inflation:4.6,unemployment:7.8,growth_rate:2.9},
+        {country:'Australia',year:2023,gdp:1.72,inflation:3.8,unemployment:3.5,growth_rate:2.0}
+      ]
+    },
+    {
+      id: 'health',
+      name: 'Health Data',
+      category: 'Health',
+      desc: 'Patient vitals, blood pressure, glucose and cholesterol across 200+ patients. Ideal for medical data exploration.',
+      stats: ['200+ patients', 'Blood, X-ray, ECG', 'Ages 5–85'],
+      color: 'amber',
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>`,
+      previewKeys: ['patient_id','age','blood_pressure','glucose'],
+      data: [
+        {patient_id:'P001',age:45,blood_pressure:'120/80',heart_rate:72,glucose:95,cholesterol:180},
+        {patient_id:'P002',age:62,blood_pressure:'140/90',heart_rate:78,glucose:120,cholesterol:220},
+        {patient_id:'P003',age:38,blood_pressure:'118/76',heart_rate:68,glucose:90,cholesterol:160},
+        {patient_id:'P004',age:55,blood_pressure:'135/85',heart_rate:75,glucose:110,cholesterol:200},
+        {patient_id:'P005',age:42,blood_pressure:'122/82',heart_rate:70,glucose:100,cholesterol:190},
+        {patient_id:'P006',age:70,blood_pressure:'150/95',heart_rate:82,glucose:140,cholesterol:240},
+        {patient_id:'P007',age:29,blood_pressure:'115/75',heart_rate:65,glucose:88,cholesterol:155}
+      ]
+    },
+    {
+      id: 'survey',
+      name: 'Survey Results',
+      category: 'Business',
+      desc: 'Customer satisfaction ratings, feedback and demographics from 1000+ respondents across 20 regions.',
+      stats: ['1000+ responses', '1–5 star ratings', '20 locations'],
+      color: 'indigo',
+      icon: `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>`,
+      previewKeys: ['respondent_id','age_group','rating','region'],
+      data: [
+        {respondent_id:'S001',age_group:'18-25',rating:5,region:'North',feedback:'Excellent service'},
+        {respondent_id:'S002',age_group:'26-35',rating:4,region:'South',feedback:'Good experience'},
+        {respondent_id:'S003',age_group:'36-45',rating:3,region:'East',feedback:'Average service'},
+        {respondent_id:'S004',age_group:'46-55',rating:4,region:'West',feedback:'Very satisfied'},
+        {respondent_id:'S005',age_group:'18-25',rating:5,region:'North',feedback:'Highly recommend'},
+        {respondent_id:'S006',age_group:'56+',rating:2,region:'South',feedback:'Needs improvement'},
+        {respondent_id:'S007',age_group:'26-35',rating:5,region:'East',feedback:'Outstanding'}
+      ]
+    }
+  ];
+
+  let activeCategory = 'all';
+  let searchQ = '';
+
+  // ── Render grid ───────────────────────────
+  function render() {
+    const grid = document.getElementById('templatesGrid');
+    let list = templates;
+    if (activeCategory !== 'all') list = list.filter(t => t.category === activeCategory);
+    if (searchQ) list = list.filter(t => t.name.toLowerCase().includes(searchQ) || t.desc.toLowerCase().includes(searchQ) || t.category.toLowerCase().includes(searchQ));
+
+    if (!list.length) {
+      grid.innerHTML = `<div class="no-results"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg><h3>No templates found</h3><p>Try a different search term or category.</p></div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map((t, i) => `
+      <div class="t-card tc-${t.color}" style="animation-delay:${i*.06}s" id="card-${t.id}">
+        <div class="t-icon ti-${t.color}">${t.icon}</div>
+        <span class="t-cat tcat-${t.color}">${t.category}</span>
+        <h3 class="t-title">${t.name}</h3>
+        <p class="t-desc">${t.desc}</p>
+        <div class="t-stats">
+          ${t.stats.map(s=>`<span class="t-stat">${s}</span>`).join('')}
+        </div>
+
+        <!-- Data preview -->
+        <div class="t-preview" id="preview-${t.id}">
+          <div class="tp-label">Sample data (${t.data.length} rows)</div>
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead>
+                <tr>
+                  ${t.previewKeys.map(k=>`<th style="text-align:left;padding:3px 6px;color:var(--text-3);font-weight:500;white-space:nowrap">${k}</th>`).join('')}
+                </tr>
+              </thead>
+              <tbody>
+                ${t.data.slice(0,4).map(row=>`<tr>${t.previewKeys.map(k=>`<td style="padding:3px 6px;color:var(--text-2);border-top:1px solid rgba(255,255,255,.04);white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis">${row[k]!==undefined?row[k]:'—'}</td>`).join('')}</tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="t-footer">
+          <button class="t-explore-btn teb-${t.color}" onclick="loadTemplate('${t.id}')">
+            <div class="shine"></div>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Start Exploring
+          </button>
+          <button class="t-peek-btn" id="peek-${t.id}" onclick="togglePreview('${t.id}')" title="Preview data">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── Toggle preview ────────────────────────
+  function togglePreview(id) {
+    const el = document.getElementById('preview-' + id);
+    const btn = document.getElementById('peek-' + id);
+    if (!el) return;
+    el.classList.toggle('show');
+    btn.classList.toggle('open');
+  }
+
+  // ── Load template ─────────────────────────
+  function loadTemplate(id) {
+    const t = templates.find(x => x.id === id);
+    if (!t) return;
+    sessionStorage.setItem('templateData', JSON.stringify(t.data));
+    sessionStorage.setItem('templateName', t.name);
+
+    // Show toast
+    document.getElementById('toastMsg').textContent = `Loading "${t.name}"…`;
+    document.getElementById('toast').classList.add('show');
+    setTimeout(() => {
+      window.location.href = '/bot_builder?template=true';
+    }, 800);
+  }
+
+  // ── Category filter ───────────────────────
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('on'));
+      this.classList.add('on');
+      activeCategory = this.dataset.cat;
+      render();
+    });
+  });
+
+  // ── Search ────────────────────────────────
+  document.getElementById('searchInput').addEventListener('input', function() {
+    searchQ = this.value.toLowerCase().trim();
+    render();
+  });
+
+  // ── Init ──────────────────────────────────
+  render();
+</script>
+</body>
+</html>

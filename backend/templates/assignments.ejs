@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assignments | VizChat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sky: #38bdf8; --sky-dark: #0ea5e9; --indigo: #6366f1; --indigo-mid: #4f46e5;
+      --emerald: #10b981; --amber: #f59e0b; --red: #ef4444; --purple: #a78bfa;
+      --pink: #ec4899;
+      --surface: #060b14; --s2: #0b1019; --s3: #101620; --s4: #161e2e;
+      --border: rgba(255,255,255,0.07); --border-mid: rgba(255,255,255,0.12);
+      --text: #eef5ff; --text-2: #7a90b4; --text-3: #3b4f6e;
+    }
+
+    html, body { background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    body { padding-top: 66px; min-height: 100vh; }
+
+    /* ── BG ── */
+    .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 50% at 10% 90%, rgba(56,189,248,0.07) 0%, transparent 55%),
+                  radial-gradient(ellipse 50% 45% at 90% 5%,  rgba(99,102,241,0.08) 0%, transparent 55%); }
+    .bg-grid { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 20%, transparent 80%); }
+
+    /* ── Header ── */
+    header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(6,11,20,0.88); backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--border); }
+    .hdr { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-box { width: 36px; height: 36px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px rgba(56,189,248,0.2), 0 6px 18px rgba(14,165,233,0.18); flex-shrink: 0; }
+    .logo-box svg { width: 18px; height: 18px; color: #fff; }
+    .logo-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.03em; color: var(--text); }
+    .logo-name span { color: var(--sky); }
+    .hdr-right { display: flex; align-items: center; gap: 8px; }
+    .btn-sm { padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-sky { background: var(--sky-dark); color: #fff; }
+    .btn-sky:hover { background: #0284c7; transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    .user-badge { display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
+    .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: #fff; }
+
+    /* ── Main ── */
+    .main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 28px 24px 60px; }
+
+    /* ── Page header ── */
+    .page-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+    .page-hdr-left { }
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 100px; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.18); font-size: 11px; color: var(--sky); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+    .page-eyebrow-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sky); animation: pd 2s ease infinite; }
+    @keyframes pd { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(22px, 3vw, 30px); letter-spacing: -.03em; color: var(--text); margin-bottom: 5px; }
+    .page-sub { font-size: 13.5px; color: var(--text-2); font-weight: 300; }
+
+    /* Create button */
+    .create-btn { display: flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 11px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border: none; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; position: relative; overflow: hidden; transition: all .2s; box-shadow: 0 4px 18px rgba(14,165,233,0.22); white-space: nowrap; }
+    .create-btn:hover { opacity: .9; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14,165,233,0.3); }
+    .create-btn svg { width: 16px; height: 16px; }
+    .create-btn .shine { position: absolute; top: 0; left: -100%; width: 55%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); transition: left .6s; }
+    .create-btn:hover .shine { left: 160%; }
+
+    /* ── Stats strip ── */
+    .stats-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+    @media(max-width:800px){ .stats-strip{grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:400px){ .stats-strip{grid-template-columns:1fr 1fr} }
+    .stat-box { background: var(--s2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+    .stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-icon svg { width: 17px; height: 17px; }
+    .si-sky { background: rgba(56,189,248,.1); color: var(--sky); }
+    .si-green { background: rgba(16,185,129,.1); color: var(--emerald); }
+    .si-amber { background: rgba(245,158,11,.1); color: var(--amber); }
+    .si-red { background: rgba(239,68,68,.1); color: var(--red); }
+    .stat-num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 2px; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ── Filters ── */
+    .filters-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-3); pointer-events: none; }
+    .search-input { width: 100%; padding: 9px 12px 9px 34px; background: var(--s2); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: rgba(56,189,248,.4); }
+    .filter-select { padding: 9px 12px; background: var(--s2); border: 1px solid var(--border); border-radius: 9px; color: var(--text-2); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; cursor: pointer; }
+    .filter-btn { padding: 8px 14px; border-radius: 9px; background: var(--s2); border: 1px solid var(--border); color: var(--text-2); font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; transition: all .2s; }
+    .filter-btn.on { background: rgba(56,189,248,.08); color: var(--sky); border-color: rgba(56,189,248,.25); }
+    .filter-btn:hover:not(.on) { background: rgba(255,255,255,.05); color: var(--text); }
+
+    /* ── Assignment grid ── */
+    .assignments-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    @media(max-width:1100px){ .assignments-grid{grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:700px){ .assignments-grid{grid-template-columns:1fr} }
+
+    /* ── Empty state ── */
+    .empty-state { grid-column: 1/-1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 64px 24px; text-align: center; background: var(--s2); border: 1px dashed var(--border); border-radius: 18px; }
+    .empty-icon { width: 72px; height: 72px; border-radius: 20px; background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.14); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+    .empty-icon svg { width: 34px; height: 34px; color: var(--sky); }
+    .empty-state h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 13px; color: var(--text-3); max-width: 280px; line-height: 1.6; margin-bottom: 20px; }
+
+    /* ── Assignment card ── */
+    .a-card { background: var(--s2); border: 1px solid var(--border); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 0; transition: all .25s; position: relative; overflow: hidden; cursor: default; }
+    .a-card:hover { border-color: var(--border-mid); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.25); }
+    .a-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 16px 16px 0 0; opacity: 0; transition: opacity .3s; }
+    .a-card.active::before { background: linear-gradient(90deg, var(--sky-dark), var(--indigo)); opacity: 1; }
+    .a-card.overdue::before { background: linear-gradient(90deg, var(--red), #f97316); opacity: 1; }
+
+    /* Card header */
+    .a-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .a-status { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 100px; font-size: 10.5px; font-weight: 600; letter-spacing: .03em; flex-shrink: 0; }
+    .as-active { background: rgba(16,185,129,.12); color: #4ade80; border: 1px solid rgba(16,185,129,.22); }
+    .as-active::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #4ade80; animation: pd 1.5s ease infinite; }
+    .as-overdue { background: rgba(239,68,68,.12); color: #f87171; border: 1px solid rgba(239,68,68,.22); }
+    .as-draft { background: rgba(245,158,11,.1); color: #fcd34d; border: 1px solid rgba(245,158,11,.2); }
+
+    .a-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15.5px; color: var(--text); margin-bottom: 6px; line-height: 1.3; }
+    .a-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 14px; }
+
+    /* Meta row */
+    .a-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+    .a-chip { display: flex; align-items: center; gap: 5px; padding: 4px 9px; border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 11px; color: var(--text-3); }
+    .a-chip svg { width: 11px; height: 11px; }
+
+    /* Questions preview */
+    .a-questions { background: var(--s3); border-radius: 9px; padding: 10px 12px; margin-bottom: 14px; display: none; }
+    .a-questions.show { display: block; }
+    .a-q-label { font-size: 10px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+    .a-q-item { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: var(--text-2); margin-bottom: 4px; }
+    .a-q-num { width: 16px; height: 16px; border-radius: 50%; background: rgba(56,189,248,.1); color: var(--sky); font-size: 9px; font-weight: 600; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+
+    /* Progress bar */
+    .a-progress { margin-bottom: 14px; }
+    .a-prog-hdr { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-3); margin-bottom: 5px; }
+    .a-prog-track { height: 3px; background: rgba(255,255,255,0.07); border-radius: 2px; overflow: hidden; }
+    .a-prog-fill { height: 100%; border-radius: 2px; background: linear-gradient(90deg, var(--sky-dark), var(--indigo)); transition: width .6s ease; }
+
+    /* Card actions */
+    .a-actions { display: flex; gap: 6px; margin-top: auto; }
+    .a-btn { flex: 1; padding: 9px 8px; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+    .a-btn svg { width: 12px; height: 12px; }
+    .ab-view { background: rgba(56,189,248,.08); color: #7dd3fc; border: 1px solid rgba(56,189,248,.18); }
+    .ab-view:hover { background: rgba(56,189,248,.15); }
+    .ab-edit { background: rgba(255,255,255,.05); color: var(--text-2); border: 1px solid var(--border); }
+    .ab-edit:hover { background: rgba(255,255,255,.1); color: var(--text); }
+    .ab-del { background: rgba(239,68,68,.08); color: #f87171; border: 1px solid rgba(239,68,68,.18); padding: 9px; }
+    .ab-del:hover { background: rgba(239,68,68,.15); }
+
+    /* Card toggle questions */
+    .a-toggle { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-3); cursor: pointer; padding: 4px 0; margin-bottom: 6px; transition: color .2s; background: none; border: none; }
+    .a-toggle:hover { color: var(--sky); }
+    .a-toggle svg { width: 12px; height: 12px; transition: transform .2s; }
+    .a-toggle.open svg { transform: rotate(90deg); }
+
+    /* ── MODAL ── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.65); backdrop-filter: blur(6px); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 20px; opacity: 0; pointer-events: none; transition: opacity .25s; }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal { background: var(--s2); border: 1px solid var(--border-mid); border-radius: 20px; width: 100%; max-width: 620px; max-height: 90vh; overflow-y: auto; position: relative; transform: translateY(12px) scale(.98); transition: transform .25s; }
+    .modal-overlay.open .modal { transform: translateY(0) scale(1); }
+    .modal::before { content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 1px; background: linear-gradient(90deg, transparent, rgba(56,189,248,.4), transparent); border-radius: 1px; }
+
+    .modal-hdr { display: flex; align-items: center; justify-content: space-between; padding: 22px 26px 0; margin-bottom: 20px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.03em; color: var(--text); }
+    .modal-close { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.06); border: 1px solid var(--border); color: var(--text-2); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; font-size: 18px; }
+    .modal-close:hover { background: rgba(239,68,68,.12); color: #f87171; border-color: rgba(239,68,68,.25); }
+
+    .modal-body { padding: 0 26px 26px; }
+
+    .form-field { margin-bottom: 16px; }
+    .f-label { display: block; font-size: 11px; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; color: var(--text-3); margin-bottom: 7px; }
+    .f-input { width: 100%; padding: 10px 13px; background: var(--s3); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border-color .2s, background .2s; }
+    .f-input::placeholder { color: var(--text-3); }
+    .f-input:hover { border-color: var(--border-mid); }
+    .f-input:focus { border-color: rgba(56,189,248,.45); background: rgba(14,165,233,.03); box-shadow: 0 0 0 3px rgba(56,189,248,.06); }
+    select.f-input { cursor: pointer; }
+    textarea.f-input { resize: none; }
+
+    .f-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media(max-width:500px){ .f-row{grid-template-columns:1fr} }
+
+    .modal-foot { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-submit { flex: 1; padding: 12px; border-radius: 10px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border: none; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; position: relative; overflow: hidden; transition: all .2s; box-shadow: 0 4px 16px rgba(14,165,233,.2); }
+    .modal-submit:hover { opacity: .9; transform: translateY(-1px); }
+    .modal-submit .shine { position: absolute; top: 0; left: -100%; width: 55%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); transition: left .6s; }
+    .modal-submit:hover .shine { left: 160%; }
+    .modal-cancel { flex: 1; padding: 12px; border-radius: 10px; background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-2); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; }
+    .modal-cancel:hover { background: rgba(255,255,255,.09); color: var(--text); }
+
+    /* ── VIEW MODAL ── */
+    .view-section { margin-bottom: 18px; }
+    .vs-label { font-size: 10px; font-weight: 500; color: var(--text-3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+    .vs-value { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+    .vs-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+    .vs-chip { display: flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 8px; background: var(--s3); border: 1px solid var(--border); font-size: 12.5px; color: var(--text-2); }
+    .vs-chip svg { width: 13px; height: 13px; }
+    .vc-sky { color: var(--sky); } .vc-green { color: var(--emerald); } .vc-amber { color: var(--amber); }
+    .q-list { display: flex; flex-direction: column; gap: 8px; }
+    .q-row { display: flex; align-items: flex-start; gap: 10px; padding: 9px 12px; background: var(--s3); border-radius: 9px; font-size: 13px; color: var(--text-2); }
+    .q-num { width: 20px; height: 20px; border-radius: 50%; background: rgba(56,189,248,.1); color: var(--sky); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+
+    /* Delete confirm overlay */
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .confirm-overlay.show { display: flex; }
+    .confirm-box { background: var(--s2); border: 1px solid rgba(239,68,68,.25); border-radius: 16px; padding: 28px; max-width: 380px; width: 100%; text-align: center; }
+    .confirm-box .ci { width: 52px; height: 52px; border-radius: 14px; background: rgba(239,68,68,.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .confirm-box .ci svg { width: 26px; height: 26px; color: #f87171; }
+    .confirm-box h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 20px; }
+    .confirm-btns { display: flex; gap: 8px; }
+    .cb-del { flex: 1; padding: 11px; border-radius: 9px; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: #f87171; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; }
+    .cb-del:hover { background: rgba(239,68,68,.25); }
+    .cb-keep { flex: 1; padding: 11px; border-radius: 9px; background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-2); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; transition: all .2s; }
+    .cb-keep:hover { background: rgba(255,255,255,.1); color: var(--text); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 11px; font-size: 13px; font-weight: 500; transform: translateY(80px); opacity: 0; transition: all .3s cubic-bezier(.22,1,.36,1); pointer-events: none; max-width: 320px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-ok { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.25); color: #4ade80; }
+    .toast-err { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25); color: #f87171; }
+    .toast svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    .a-card { animation: fadeUp .35s ease both; }
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="hdr">
+      <a href="/home" class="logo">
+        <div class="logo-box"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+        <span class="logo-name">Viz<span>Chat</span></span>
+      </a>
+      <div class="hdr-right">
+        <div class="user-badge"><div class="user-avatar" id="avatarInitial">D</div><span id="botUsername">Demo User</span></div>
+        <a href="/home" class="btn-sm btn-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Home
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- Page header -->
+    <div class="page-hdr">
+      <div class="page-hdr-left">
+        <div class="page-eyebrow"><span class="page-eyebrow-dot"></span>Assignments</div>
+        <h1 class="page-title">Data Analysis Assignments</h1>
+        <p class="page-sub">Create tasks · Set datasets · Track student progress</p>
+      </div>
+      <button class="create-btn" onclick="openCreate()">
+        <div class="shine"></div>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        New Assignment
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip" id="statsStrip">
+      <div class="stat-box">
+        <div class="stat-icon si-sky"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+        <div><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total</div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon si-green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <div><div class="stat-num" id="statActive">0</div><div class="stat-lbl">Active</div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon si-amber"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+        <div><div class="stat-num" id="statDueToday">0</div><div class="stat-lbl">Due Today</div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon si-red"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+        <div><div class="stat-num" id="statOverdue">0</div><div class="stat-lbl">Overdue</div></div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+      <div class="search-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search assignments…">
+      </div>
+      <select class="filter-select" id="filterStatus">
+        <option value="all">All Status</option>
+        <option value="active">Active</option>
+        <option value="overdue">Overdue</option>
+      </select>
+      <select class="filter-select" id="filterAudience">
+        <option value="all">All Audiences</option>
+        <option value="students">Students</option>
+        <option value="class">Class</option>
+        <option value="public">Public</option>
+      </select>
+    </div>
+
+    <!-- Assignments grid -->
+    <div class="assignments-grid" id="assignmentsGrid">
+      <!-- Populated by JS -->
+    </div>
+  </div>
+
+  <!-- ── CREATE / EDIT MODAL ── -->
+  <div class="modal-overlay" id="createModal">
+    <div class="modal">
+      <div class="modal-hdr">
+        <span class="modal-title" id="modalTitle">New Assignment</span>
+        <button class="modal-close" onclick="closeCreate()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="assignmentForm" novalidate>
+          <input type="hidden" id="editId">
+
+          <div class="form-field">
+            <label class="f-label">Assignment Title *</label>
+            <input type="text" id="aTitle" class="f-input" placeholder="e.g., Q3 Sales Data Analysis" required>
+          </div>
+
+          <div class="form-field">
+            <label class="f-label">Description</label>
+            <textarea id="aDesc" class="f-input" rows="3" placeholder="What should students explore or find out?"></textarea>
+          </div>
+
+          <div class="f-row">
+            <div class="form-field">
+              <label class="f-label">Data Source *</label>
+              <select id="aData" class="f-input" required>
+                <option value="">Select dataset…</option>
+                <option value="Sales Dashboard">Sales Dashboard</option>
+                <option value="Student Records">Student Records</option>
+                <option value="Lab Experiment">Lab Experiment</option>
+                <option value="Economic Data">Economic Data</option>
+                <option value="Health Data">Health Data</option>
+                <option value="Survey Results">Survey Results</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label class="f-label">Audience *</label>
+              <select id="aAudience" class="f-input" required>
+                <option value="students">Students</option>
+                <option value="class">Class Section</option>
+                <option value="public">Public</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="f-row">
+            <div class="form-field">
+              <label class="f-label">Due Date *</label>
+              <input type="date" id="aDue" class="f-input" required>
+            </div>
+            <div class="form-field">
+              <label class="f-label">Max Submissions</label>
+              <input type="number" id="aMaxSub" class="f-input" placeholder="Unlimited" min="1">
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label class="f-label">Questions / Instructions <span style="color:var(--text-3);text-transform:none;letter-spacing:0;font-size:11px">(one per line)</span></label>
+            <textarea id="aQuestions" class="f-input" rows="4" placeholder="What is the highest sales value?&#10;Which region has the most records?&#10;Find entries where profit > 5000"></textarea>
+          </div>
+
+          <div class="modal-foot">
+            <button type="submit" class="modal-submit"><div class="shine"></div><span id="submitTxt">Create Assignment</span></button>
+            <button type="button" class="modal-cancel" onclick="closeCreate()">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW MODAL ── -->
+  <div class="modal-overlay" id="viewModal">
+    <div class="modal">
+      <div class="modal-hdr">
+        <span class="modal-title">Assignment Details</span>
+        <button class="modal-close" onclick="closeView()">×</button>
+      </div>
+      <div class="modal-body" id="viewBody">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DELETE CONFIRM ── -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div class="ci"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div>
+      <h4>Delete Assignment?</h4>
+      <p>This action is permanent and cannot be undone.</p>
+      <div class="confirm-btns">
+        <button class="cb-del" id="confirmDelBtn">Yes, Delete</button>
+        <button class="cb-keep" onclick="closeConfirm()">Keep It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <svg id="toastIcon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span id="toastMsg"></span>
+  </div>
+
+<script>
+  // ── State ─────────────────────────────────
+  let currentUser = null;
+  let pendingDeleteId = null;
+  let editingId = null;
+
+  // ── Init ──────────────────────────────────
+  function init() {
+    const stored = sessionStorage.getItem('vcUser');
+    currentUser = stored ? JSON.parse(stored) : { uid: 'u-' + Date.now(), email: 'demo@vizchat.io', displayName: 'Demo User' };
+    sessionStorage.setItem('vcUser', JSON.stringify(currentUser));
+    const name = currentUser.displayName || currentUser.email;
+    document.getElementById('botUsername').textContent = name;
+    document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
+    render();
+    bindFilters();
+  }
+
+  // ── Storage ───────────────────────────────
+  function getAll() { return JSON.parse(localStorage.getItem('vc_assignments') || '[]'); }
+  function saveAll(arr) { localStorage.setItem('vc_assignments', JSON.stringify(arr)); }
+  function mine() { return getAll().filter(a => a.uid === currentUser.uid); }
+
+  // ── Toast ─────────────────────────────────
+  let toastTimer;
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    const icon = document.getElementById('toastIcon');
+    document.getElementById('toastMsg').textContent = msg;
+    el.className = 'toast show toast-' + type;
+    icon.innerHTML = type === 'ok'
+      ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>'
+      : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ── Render ────────────────────────────────
+  function render(filter = {}) {
+    let list = mine();
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    // Stats
+    const active = list.filter(a => new Date(a.dueDate) >= today).length;
+    const overdue = list.filter(a => new Date(a.dueDate) < today).length;
+    const dueToday = list.filter(a => { const d = new Date(a.dueDate); d.setHours(0,0,0,0); return d.getTime() === today.getTime(); }).length;
+    document.getElementById('statTotal').textContent = list.length;
+    document.getElementById('statActive').textContent = active;
+    document.getElementById('statDueToday').textContent = dueToday;
+    document.getElementById('statOverdue').textContent = overdue;
+
+    // Apply filters
+    const q = (document.getElementById('searchInput').value || '').toLowerCase();
+    const status = document.getElementById('filterStatus').value;
+    const audience = document.getElementById('filterAudience').value;
+
+    if (q) list = list.filter(a => a.title.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q));
+    if (status === 'active') list = list.filter(a => new Date(a.dueDate) >= today);
+    if (status === 'overdue') list = list.filter(a => new Date(a.dueDate) < today);
+    if (audience !== 'all') list = list.filter(a => a.audience === audience);
+
+    list.sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const grid = document.getElementById('assignmentsGrid');
+
+    if (!list.length) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg></div>
+          <h3>No assignments yet</h3>
+          <p>Create your first assignment and set a dataset for your students to explore.</p>
+          <button class="create-btn" onclick="openCreate()" style="font-size:13px;padding:10px 18px"><div class="shine"></div><svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>Create Assignment</button>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = '';
+    list.forEach((a, idx) => {
+      const due = new Date(a.dueDate);
+      const isOverdue = due < today;
+      const dueStr = due.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+      const audienceLabels = { students: '👩‍🎓 Students', class: '🏫 Class', public: '🌐 Public' };
+      const qList = (a.questions || []).filter(q => q.trim());
+
+      const card = document.createElement('div');
+      card.className = `a-card ${isOverdue ? 'overdue' : 'active'}`;
+      card.style.animationDelay = (idx * 0.04) + 's';
+      card.id = 'card-' + a.id;
+
+      card.innerHTML = `
+        <div class="a-card-top">
+          <div style="flex:1;min-width:0">
+            <h3 class="a-title">${a.title}</h3>
+          </div>
+          <span class="a-status ${isOverdue ? 'as-overdue' : 'as-active'}">${isOverdue ? 'Overdue' : 'Active'}</span>
+        </div>
+        <p class="a-desc">${a.desc || 'No description provided.'}</p>
+
+        <div class="a-meta">
+          <span class="a-chip"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5l2 2h5a2 2 0 012 2v5"/></svg>${a.dataSource}</span>
+          <span class="a-chip"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>${audienceLabels[a.audience] || a.audience}</span>
+          <span class="a-chip"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${dueStr}</span>
+        </div>
+
+        ${qList.length ? `
+        <button class="a-toggle" id="tog-${a.id}" onclick="toggleQ('${a.id}')">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          ${qList.length} question${qList.length > 1 ? 's' : ''}
+        </button>
+        <div class="a-questions" id="q-${a.id}">
+          <div class="a-q-label">Questions</div>
+          ${qList.slice(0,3).map((q,i)=>`<div class="a-q-item"><span class="a-q-num">${i+1}</span>${q}</div>`).join('')}
+          ${qList.length > 3 ? `<div style="font-size:11px;color:var(--text-3);margin-top:4px">+${qList.length-3} more…</div>` : ''}
+        </div>` : ''}
+
+        <div style="flex:1"></div>
+        <div class="a-actions" style="margin-top:14px">
+          <button class="a-btn ab-view" onclick="openView('${a.id}')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            View
+          </button>
+          <button class="a-btn ab-edit" onclick="openEdit('${a.id}')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            Edit
+          </button>
+          <button class="a-btn ab-del" onclick="askDelete('${a.id}')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+          </button>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  // ── Toggle questions ──────────────────────
+  function toggleQ(id) {
+    const qEl = document.getElementById('q-' + id);
+    const togEl = document.getElementById('tog-' + id);
+    if (!qEl) return;
+    qEl.classList.toggle('show');
+    togEl.classList.toggle('open');
+  }
+
+  // ── Filters ───────────────────────────────
+  function bindFilters() {
+    ['searchInput', 'filterStatus', 'filterAudience'].forEach(id => {
+      document.getElementById(id).addEventListener('input', () => render());
+      document.getElementById(id).addEventListener('change', () => render());
+    });
+  }
+
+  // ── Create modal ──────────────────────────
+  function openCreate() {
+    editingId = null;
+    document.getElementById('assignmentForm').reset();
+    document.getElementById('editId').value = '';
+    document.getElementById('modalTitle').textContent = 'New Assignment';
+    document.getElementById('submitTxt').textContent = 'Create Assignment';
+    document.getElementById('createModal').classList.add('open');
+  }
+
+  function closeCreate() { document.getElementById('createModal').classList.remove('open'); }
+
+  function openEdit(id) {
+    const a = getAll().find(x => x.id === id);
+    if (!a) return;
+    editingId = id;
+    document.getElementById('editId').value = id;
+    document.getElementById('aTitle').value = a.title;
+    document.getElementById('aDesc').value = a.desc;
+    document.getElementById('aData').value = a.dataSource;
+    document.getElementById('aAudience').value = a.audience;
+    document.getElementById('aDue').value = a.dueDate;
+    document.getElementById('aMaxSub').value = a.maxSub || '';
+    document.getElementById('aQuestions').value = (a.questions || []).join('\n');
+    document.getElementById('modalTitle').textContent = 'Edit Assignment';
+    document.getElementById('submitTxt').textContent = 'Save Changes';
+    document.getElementById('createModal').classList.add('open');
+  }
+
+  // ── View modal ────────────────────────────
+  function openView(id) {
+    const a = getAll().find(x => x.id === id);
+    if (!a) return;
+    const due = new Date(a.dueDate);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const isOverdue = due < today;
+    const qList = (a.questions || []).filter(q => q.trim());
+
+    document.getElementById('viewBody').innerHTML = `
+      <div class="view-section">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:19px;color:var(--text)">${a.title}</span>
+          <span class="a-status ${isOverdue ? 'as-overdue' : 'as-active'}">${isOverdue ? 'Overdue' : 'Active'}</span>
+        </div>
+        <p style="font-size:13.5px;color:var(--text-2);line-height:1.7">${a.desc || 'No description.'}</p>
+      </div>
+      <div class="view-section">
+        <div class="vs-label">Details</div>
+        <div class="vs-meta">
+          <span class="vs-chip"><svg class="vc-sky" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5l2 2h5a2 2 0 012 2v5"/></svg>${a.dataSource}</span>
+          <span class="vs-chip"><svg class="vc-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>${a.audience}</span>
+          <span class="vs-chip"><svg class="vc-amber" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${due.toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'})}</span>
+          <span class="vs-chip">Created ${new Date(a.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+      ${qList.length ? `
+      <div class="view-section">
+        <div class="vs-label">${qList.length} Question${qList.length > 1 ? 's' : ''}</div>
+        <div class="q-list">${qList.map((q,i)=>`<div class="q-row"><span class="q-num">${i+1}</span>${q}</div>`).join('')}</div>
+      </div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button onclick="closeView();openEdit('${id}')" class="modal-submit" style="padding:11px 18px;font-size:13px"><div class="shine"></div>Edit Assignment</button>
+        <button onclick="closeView()" class="modal-cancel" style="padding:11px;max-width:100px">Close</button>
+      </div>
+    `;
+    document.getElementById('viewModal').classList.add('open');
+  }
+
+  function closeView() { document.getElementById('viewModal').classList.remove('open'); }
+
+  // ── Delete confirm ────────────────────────
+  function askDelete(id) {
+    pendingDeleteId = id;
+    document.getElementById('confirmOverlay').classList.add('show');
+  }
+  function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); pendingDeleteId = null; }
+  document.getElementById('confirmDelBtn').addEventListener('click', () => {
+    if (!pendingDeleteId) return;
+    const all = getAll().filter(a => a.id !== pendingDeleteId);
+    saveAll(all);
+    closeConfirm();
+    render();
+    toast('Assignment deleted.', 'ok');
+  });
+
+  // ── Form submit ───────────────────────────
+  document.getElementById('assignmentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const title = document.getElementById('aTitle').value.trim();
+    const data = document.getElementById('aData').value;
+    const due = document.getElementById('aDue').value;
+    if (!title || !data || !due) { toast('Please fill in all required fields.', 'err'); return; }
+
+    const assignment = {
+      title,
+      desc: document.getElementById('aDesc').value.trim(),
+      dataSource: data,
+      audience: document.getElementById('aAudience').value,
+      dueDate: due,
+      maxSub: document.getElementById('aMaxSub').value || null,
+      questions: document.getElementById('aQuestions').value.split('\n').map(q=>q.trim()).filter(Boolean),
+      uid: currentUser.uid,
+    };
+
+    const all = getAll();
+    const eid = document.getElementById('editId').value;
+    if (eid) {
+      const idx = all.findIndex(a => a.id === eid);
+      if (idx > -1) { assignment.id = eid; assignment.createdAt = all[idx].createdAt; all[idx] = assignment; }
+    } else {
+      assignment.id = 'a-' + Date.now();
+      assignment.createdAt = new Date().toISOString();
+      all.push(assignment);
+    }
+    saveAll(all);
+    closeCreate();
+    render();
+    toast(eid ? 'Assignment updated!' : 'Assignment created!', 'ok');
+  });
+
+  // Click outside modal to close
+  document.getElementById('createModal').addEventListener('click', function(e) { if (e.target === this) closeCreate(); });
+  document.getElementById('viewModal').addEventListener('click', function(e) { if (e.target === this) closeView(); });
+
+  // Set today as default due date min
+  document.getElementById('aDue').min = new Date().toISOString().split('T')[0];
+
+  // Init on load
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

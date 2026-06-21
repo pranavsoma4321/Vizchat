@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+
+<html lang="en" class="scroll-smooth">
+
+
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Assignment - NexusBot</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css') }}">
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+
+    body { font-family: 'Inter', sans-serif; }
+
+    .glass-nav { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+
+  </style>
+
+</head>
+
+
+
+<body class="bg-gray-900 antialiased text-gray-100">
+
+
+
+  <header class="glass-nav fixed top-0 left-0 right-0 z-50">
+
+    <div class="w-full mx-auto px-6 lg:px-12 py-4 flex justify-between items-center">
+
+      <h1 class="text-2xl font-bold text-white">
+
+        <a href="{{ url_for('home') }}">Nexus<span class="text-sky-500">Bot</span></a>
+
+      </h1>
+
+      <a href="{{ url_for('home') }}" class="bg-sky-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-sky-600 transition">Home</a>
+
+    </div>
+
+  </header>
+
+
+
+  <main class="pt-20 pb-12">
+
+    <div class="w-full mx-auto px-4 lg:px-12">
+
+      
+
+      <!-- Assignment Info -->
+
+      <div id="assignmentInfo" class="bg-gray-800 rounded-lg border border-gray-700 p-8 mb-8">
+
+        <h1 id="assignmentTitle" class="text-4xl font-bold text-white mb-4">Loading...</h1>
+
+        <p id="assignmentDesc" class="text-gray-400 mb-6 text-lg"></p>
+
+        
+
+        <div class="grid md:grid-cols-4 gap-4 mb-8">
+
+          <div class="bg-gray-700 rounded p-4">
+
+            <p class="text-gray-400 text-sm">Due Date</p>
+
+            <p id="dueDate" class="text-white font-bold"></p>
+
+          </div>
+
+          <div class="bg-gray-700 rounded p-4">
+
+            <p class="text-gray-400 text-sm">Questions</p>
+
+            <p id="questionsCount" class="text-white font-bold">-</p>
+
+          </div>
+
+          <div class="bg-gray-700 rounded p-4">
+
+            <p class="text-gray-400 text-sm">Submissions</p>
+
+            <p id="submissionCount" class="text-white font-bold">0</p>
+
+          </div>
+
+          <div class="bg-gray-700 rounded p-4">
+
+            <p class="text-gray-400 text-sm">Status</p>
+
+            <p id="statusBadge" class="text-yellow-400 font-bold">Pending</p>
+
+          </div>
+
+        </div>
+
+
+
+        <button id="startBtn" onclick="startAssignment()" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold px-8 py-3 rounded-lg transition">
+
+          Start Assignment
+
+        </button>
+
+      </div>
+
+
+
+      <!-- Questions List -->
+
+      <div id="questionsList" class="hidden mb-8">
+
+        <h2 class="text-2xl font-bold text-white mb-6">Questions to Explore</h2>
+
+        <div id="questionsContainer" class="space-y-4">
+
+          <!-- Questions will be populated here -->
+
+        </div>
+
+      </div>
+
+
+
+      <!-- Bot Interface -->
+
+      <div id="botInterface" class="hidden">
+
+        <h2 class="text-2xl font-bold text-white mb-6">Explore the Data</h2>
+
+        <div class="bg-gray-800 rounded-lg border border-gray-700 p-6 min-h-96">
+
+          <p class="text-gray-400 text-center py-12">
+
+            Redirecting to bot interface...
+
+          </p>
+
+        </div>
+
+      </div>
+
+
+
+    </div>
+
+  </main>
+
+
+
+  <script type="module">
+
+    import authService from '../static/firebase-auth.js';
+
+    import { getFirestore, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    import db from '../static/firebase-config.js';
+
+
+
+    const assignmentId = '{{ assignment_id }}';
+
+
+
+    // Load assignment details
+
+    async function loadAssignment() {
+
+      try {
+
+        const assignDoc = await getDoc(doc(db, 'assignments', assignmentId));
+
+        
+
+        if (!assignDoc.exists()) {
+
+          document.getElementById('assignmentInfo').innerHTML = '<p class="text-red-400 text-center py-8">Assignment not found</p>';
+
+          return;
+
+        }
+
+
+
+        const data = assignDoc.data();
+
+        
+
+        document.getElementById('assignmentTitle').textContent = data.title || 'Untitled Assignment';
+
+        document.getElementById('assignmentDesc').textContent = data.description || 'No description provided';
+
+        document.getElementById('dueDate').textContent = new Date(data.dueDate).toLocaleDateString();
+
+        document.getElementById('questionsCount').textContent = (data.questions || []).length;
+
+        document.getElementById('submissionCount').textContent = data.submissions || 0;
+
+
+
+        // Check if overdue
+
+        const today = new Date();
+
+        const dueDate = new Date(data.dueDate);
+
+        if (dueDate < today) {
+
+          document.getElementById('statusBadge').textContent = 'Overdue';
+
+          document.getElementById('statusBadge').className = 'text-red-400 font-bold';
+
+        }
+
+
+
+        // Populate questions
+
+        if (data.questions && data.questions.length > 0) {
+
+          const container = document.getElementById('questionsContainer');
+
+          container.innerHTML = '';
+
+          data.questions.forEach((q, i) => {
+
+            const div = document.createElement('div');
+
+            div.className = 'bg-gray-700 rounded p-4 flex items-start gap-4';
+
+            div.innerHTML = `
+
+              <div class="bg-sky-600 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">${i + 1}</div>
+
+              <div>
+
+                <p class="text-white font-medium">${q}</p>
+
+                <p class="text-gray-400 text-sm mt-1">Try asking the bot: "${q}"</p>
+
+              </div>
+
+            `;
+
+            container.appendChild(div);
+
+          });
+
+        }
+
+
+
+      } catch (error) {
+
+        console.error('Error loading assignment:', error);
+
+        document.getElementById('assignmentInfo').innerHTML = '<p class="text-red-400 text-center py-8">Error loading assignment</p>';
+
+      }
+
+    }
+
+
+
+    window.startAssignment = function() {
+
+      // Store assignment data and redirect to bot with this assignment
+
+      sessionStorage.setItem('assignmentId', assignmentId);
+
+      // For now, redirect to templates to select data source
+
+      window.location.href = '{{ url_for("templates") }}';
+
+    };
+
+
+
+    // Load on page load
+
+    loadAssignment();
+
+  </script>
+
+
+
+</body>
+
+</html>
+

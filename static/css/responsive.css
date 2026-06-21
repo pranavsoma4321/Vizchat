@@ -1,0 +1,394 @@
+html,
+body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+table {
+  max-width: 100%;
+}
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.container-custom {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (max-width: 1400px) {
+  .container-custom {
+    max-width: 1200px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .container-custom {
+    max-width: 992px;
+  }
+}
+
+@media (max-width: 992px) {
+  .container-custom {
+    max-width: 768px;
+  }
+}
+
+@media (max-width: 768px) {
+  .container-custom {
+    max-width: 576px;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+/* Tablet-specific improvements */
+@media (max-width: 768px) and (min-width: 601px) {
+  .container-custom {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .hero-gradient-text {
+    font-size: 2.5rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  /* Tablet navigation */
+  .glass-nav {
+    padding: 0.75rem 0;
+  }
+  
+  /* Tablet grid improvements */
+  .grid-cols-3 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .container-custom {
+    max-width: 100%;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+  
+  /* Mobile-specific improvements */
+  .hero-gradient-text {
+    font-size: 2rem !important;
+    line-height: 1.2 !important;
+  }
+  
+  .glass-nav {
+    backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.8) !important;
+  }
+  
+  /* Better mobile spacing */
+  .min-h-screen {
+    min-height: 100vh !important;
+    padding-top: 5rem !important;
+  }
+  
+  /* Mobile chat demo improvements */
+  .soft-ring {
+    border-width: 1px !important;
+  }
+  
+  /* Better mobile buttons */
+  .rounded-lg {
+    border-radius: 0.75rem !important;
+  }
+  
+  /* Mobile text adjustments */
+  .text-xs {
+    font-size: 0.75rem !important;
+  }
+  
+  .text-sm {
+    font-size: 0.875rem !important;
+  }
+  
+  .text-base {
+    font-size: 1rem !important;
+  }
+  
+  /* Mobile grid improvements */
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+  
+  .gap-2 {
+    gap: 0.5rem !important;
+  }
+  
+  .gap-3 {
+    gap: 0.75rem !important;
+  }
+  
+  /* Mobile navigation improvements */
+  .mobile-menu {
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  /* Better mobile shadows */
+  .shadow-xl {
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  }
+}
+
+/* Extra small screens (300px - 600px) - Bot Builder specific */
+@media (max-width: 600px) and (min-width: 300px) {
+  /* Bot Builder Layout */
+  .grid.md\:grid-cols-1.lg\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  
+  /* Bot Builder Header */
+  .glass-nav {
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  .glass-nav .text-2xl {
+    font-size: 1.125rem !important;
+  }
+  
+  .glass-nav .px-4.py-2 {
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  /* Upload Section */
+  .border-2.border-dashed {
+    padding: 1rem !important;
+    min-height: 120px !important;
+  }
+  
+  .border-2.border-dashed .w-10.h-10,
+  .border-2.border-dashed .w-12.h-12 {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+  
+  .border-2.border-dashed .text-sm,
+  .border-2.border-dashed .text-base {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Stats Cards */
+  .grid.grid-cols-3.gap-2 {
+    gap: 0.25rem !important;
+  }
+  
+  .stats-card {
+    padding: 0.5rem !important;
+  }
+  
+  .stats-card .text-lg,
+  .stats-card .text-2xl {
+    font-size: 1rem !important;
+  }
+  
+  .stats-card .text-xs {
+    font-size: 0.625rem !important;
+  }
+  
+  /* Data Table */
+  .data-table {
+    font-size: 0.625rem !important;
+  }
+  
+  .data-table table {
+    min-width: 300px !important;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.25rem 0.375rem !important;
+    font-size: 0.625rem !important;
+  }
+  
+  /* Chat Interface */
+  .chat-container {
+    min-height: 200px !important;
+    max-height: 250px !important;
+  }
+  
+  .chat-container .text-sm {
+    font-size: 0.75rem !important;
+  }
+  
+  .chat-container .text-xs {
+    font-size: 0.625rem !important;
+  }
+  
+  /* Chat Input */
+  .flex.gap-2 input {
+    font-size: 0.875rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .flex.gap-2 button {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+  }
+  
+  .flex.gap-2 button .w-5.h-5 {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+  
+  /* Bot Info Bar */
+  .flex.justify-between.items-center.flex-wrap {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  
+  .flex.gap-2.flex-wrap {
+    gap: 0.375rem !important;
+    width: 100% !important;
+  }
+  
+  .flex.gap-2.flex-wrap button {
+    flex: 1 !important;
+    min-width: 0 !important;
+    padding: 0.375rem 0.5rem !important;
+    font-size: 0.625rem !important;
+  }
+  
+  /* Visualization Section */
+  .grid.grid-cols-2.md\:grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.375rem !important;
+  }
+  
+  .grid.grid-cols-2.md\:grid-cols-4 select,
+  .grid.grid-cols-2.md\:grid-cols-4 button {
+    font-size: 0.625rem !important;
+    padding: 0.375rem 0.5rem !important;
+  }
+  
+  /* Summary Cards */
+  .grid.grid-cols-2.md\:grid-cols-4.gap-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.375rem !important;
+  }
+  
+  .grid.grid-cols-2.md\:grid-cols-4.gap-3 > div {
+    padding: 0.5rem !important;
+  }
+  
+  .grid.grid-cols-2.md\:grid-cols-4.gap-3 .text-xs {
+    font-size: 0.625rem !important;
+  }
+  
+  .grid.grid-cols-2.md\:grid-cols-4.gap-3 .text-2xl {
+    font-size: 1rem !important;
+  }
+  
+  /* Comparison Table */
+  #comparisonTableContainer {
+    max-height: 200px !important;
+  }
+  
+  #comparisonTableContainer table {
+    font-size: 0.625rem !important;
+  }
+  
+  #comparisonTableContainer th,
+  #comparisonTableContainer td {
+    padding: 0.25rem 0.375rem !important;
+  }
+  
+  /* Search Inputs */
+  input[type="text"].placeholder-gray-500 {
+    font-size: 0.75rem !important;
+    padding: 0.375rem 0.5rem !important;
+  }
+  
+  /* Progress Bar */
+  .bg-gray-700.rounded-full.h-2 {
+    height: 0.25rem !important;
+  }
+  
+  /* Close Buttons */
+  button[id$="Btn"].bg-red-600 {
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.625rem !important;
+  }
+  
+  /* Responsive margins and padding */
+  .mb-4 { margin-bottom: 0.75rem !important; }
+  .mb-6 { margin-bottom: 1rem !important; }
+  .mt-6 { margin-top: 1rem !important; }
+  .p-4 { padding: 0.75rem !important; }
+  .p-6 { padding: 0.75rem !important; }
+  .px-4 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+  .py-2 { padding-top: 0.375rem !important; padding-bottom: 0.375rem !important; }
+  .py-3 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+  .py-4 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+}
+
+/* Ultra small screens (300px - 400px) */
+@media (max-width: 400px) and (min-width: 300px) {
+  /* Stack buttons vertically */
+  .flex.gap-2.flex-wrap {
+    flex-direction: column !important;
+  }
+  
+  .flex.gap-2.flex-wrap button {
+    width: 100% !important;
+    margin-bottom: 0.25rem !important;
+  }
+  
+  /* Single column for visualization buttons */
+  .grid.grid-cols-2.md\:grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Single column for summary cards */
+  .grid.grid-cols-2.md\:grid-cols-4.gap-3 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Even smaller text */
+  .data-table {
+    font-size: 0.5625rem !important;
+  }
+  
+  .data-table th,
+  .data-table td {
+    padding: 0.1875rem 0.25rem !important;
+    font-size: 0.5625rem !important;
+  }
+  
+  /* Compact chat input */
+  .flex.gap-2 {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  
+  .flex.gap-2 input {
+    width: 100% !important;
+  }
+  
+  .flex.gap-2 button {
+    width: 100% !important;
+  }
+}

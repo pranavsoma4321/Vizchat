@@ -1,0 +1,2048 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data-Driven Chatbot Builder - VizChat</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body { overflow-x: hidden; font-family: 'Inter', sans-serif; }
+
+    /* ── KPI Cards ── */
+    .kpi-card {
+      background: linear-gradient(135deg, rgba(30,41,59,0.9), rgba(15,23,42,0.9));
+      border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 12px; padding: 16px;
+      transition: transform .2s, box-shadow .2s;
+      position: relative; overflow: hidden;
+    }
+    .kpi-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+    .kpi-card.blue::before   { background: linear-gradient(90deg,#3b82f6,#60a5fa); }
+    .kpi-card.green::before  { background: linear-gradient(90deg,#10b981,#34d399); }
+    .kpi-card.purple::before { background: linear-gradient(90deg,#8b5cf6,#a78bfa); }
+    .kpi-card.orange::before { background: linear-gradient(90deg,#f59e0b,#fcd34d); }
+    .kpi-card.red::before    { background: linear-gradient(90deg,#ef4444,#f87171); }
+    .kpi-card.cyan::before   { background: linear-gradient(90deg,#06b6d4,#67e8f9); }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,.4); }
+
+    /* ── Feature Panel base ── */
+    .feature-panel {
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(148,163,184,0.15);
+      border-radius: 14px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* ── Premium Feature Tabs ── */
+    .prem-tab {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 9px;
+      font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all .18s;
+      border: 1px solid transparent; white-space: nowrap;
+    }
+    .prem-tab.active {
+      background: rgba(99,102,241,0.2);
+      border-color: rgba(99,102,241,0.5);
+      color: #a5b4fc;
+    }
+    .prem-tab:not(.active) {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255,255,255,0.08);
+      color: #9ca3af;
+    }
+    .prem-tab:not(.active):hover {
+      background: rgba(255,255,255,0.08);
+      color: #e5e7eb;
+    }
+
+    /* ── AI Insight Cards ── */
+    .insight-card {
+      background: rgba(99,102,241,0.08);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: 10px; padding: 12px 14px;
+      font-size: 0.8rem; line-height: 1.6;
+      color: #c7d2fe;
+      transition: border-color .15s;
+    }
+    .insight-card:hover { border-color: rgba(99,102,241,0.5); }
+    .insight-card .ins-icon { font-size: 1rem; margin-right: 6px; }
+    .insight-card .ins-badge {
+      display: inline-block;
+      background: rgba(99,102,241,0.25);
+      color: #a5b4fc; border-radius: 4px;
+      padding: 1px 6px; font-size: 0.7rem;
+      font-weight: 600; margin-right: 4px;
+    }
+
+    /* ── Alert Builder ── */
+    .alert-rule {
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 10px; padding: 12px;
+      transition: border-color .15s;
+    }
+    .alert-rule:hover { border-color: rgba(148,163,184,0.25); }
+    .alert-rule.triggered { border-color: rgba(239,68,68,0.5); background: rgba(239,68,68,0.06); }
+    .alert-rule.triggered .alert-status { color: #f87171; }
+    .alert-rule.ok .alert-status { color: #34d399; }
+
+    .alert-badge {
+      position: fixed; top: 72px; right: 20px;
+      background: rgba(239,68,68,0.95);
+      border: 1px solid rgba(239,68,68,0.6);
+      border-radius: 10px; padding: 10px 14px;
+      font-size: 0.8rem; color: #fff;
+      z-index: 999; max-width: 300px;
+      box-shadow: 0 8px 24px rgba(239,68,68,0.3);
+      animation: slideIn .3s ease;
+    }
+    @keyframes slideIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:none; } }
+
+    /* ── Key Influencers ── */
+    .influencer-bar-bg {
+      background: rgba(55,65,81,0.6);
+      border-radius: 4px; height: 8px; overflow: hidden; flex: 1;
+    }
+    .influencer-bar-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+    .influencer-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .influencer-label { font-size: 0.75rem; color: #d1d5db; width: 120px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .influencer-val { font-size: 0.7rem; color: #9ca3af; width: 45px; text-align: right; flex-shrink: 0; font-family: monospace; }
+    .influencer-dir { font-size: 0.75rem; width: 18px; flex-shrink: 0; text-align: center; }
+
+    /* ── Embed Panel ── */
+    .embed-code-box {
+      background: #0d1117;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 9px; padding: 12px 14px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem; color: #e6edf3;
+      line-height: 1.6; overflow-x: auto;
+      max-height: 120px; overflow-y: auto;
+    }
+
+    /* ── Report Builder ── */
+    .report-template {
+      background: rgba(30,41,59,0.7);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 10px; padding: 12px;
+      cursor: pointer; transition: all .18s;
+      text-align: center;
+    }
+    .report-template:hover, .report-template.selected {
+      border-color: rgba(99,102,241,0.5);
+      background: rgba(99,102,241,0.1);
+    }
+    .report-template .rt-icon { font-size: 1.6rem; margin-bottom: 6px; }
+    .report-template .rt-name { font-size: 0.75rem; font-weight: 600; color: #e5e7eb; }
+    .report-template .rt-desc { font-size: 0.65rem; color: #9ca3af; margin-top: 2px; }
+
+    /* ── Data Pipeline ── */
+    .pipeline-step {
+      display: flex; align-items: center; gap: 10px;
+      background: rgba(30,41,59,0.8);
+      border: 1px solid rgba(148,163,184,0.12);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 0.78rem;
+    }
+    .pipeline-step .ps-icon { font-size: 1rem; flex-shrink: 0; }
+    .pipeline-step .ps-label { color: #d1d5db; flex: 1; }
+    .pipeline-step .ps-tag {
+      background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3);
+      color: #34d399; border-radius: 4px; padding: 1px 6px; font-size: 0.65rem;
+    }
+    .pipeline-connector { width: 2px; height: 14px; background: rgba(148,163,184,0.2); margin: 0 auto; }
+
+    /* ── NL Chart suggestion ── */
+    .nl-chart-suggestion {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25);
+      border-radius: 8px; padding: 8px 12px;
+      font-size: 0.75rem; color: #93c5fd;
+      margin-top: 8px; cursor: pointer;
+      transition: all .15s;
+    }
+    .nl-chart-suggestion:hover { background: rgba(59,130,246,0.2); }
+
+    /* ── Slicer, Q&A chips ── */
+    #slicerPanel { background: rgba(15,23,42,0.95); border: 1px solid rgba(148,163,184,0.15); border-radius: 12px; backdrop-filter: blur(10px); }
+    .slicer-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(59,130,246,0.2); border: 1px solid rgba(59,130,246,0.4); color: #93c5fd; border-radius: 20px; padding: 3px 10px; font-size: 0.72rem; cursor: pointer; transition: all .15s; }
+    .slicer-chip:hover, .slicer-chip.active { background: rgba(59,130,246,0.5); border-color: #3b82f6; color: #fff; }
+    .qa-chip { display: inline-block; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #a5b4fc; border-radius: 20px; padding: 4px 12px; font-size: 0.72rem; cursor: pointer; transition: all .15s; white-space: nowrap; }
+    .qa-chip:hover { background: rgba(99,102,241,0.35); border-color: #6366f1; color: #fff; }
+
+    /* ── Misc ── */
+    .profile-bar-bg { background: rgba(55,65,81,0.6); border-radius: 4px; height: 6px; overflow: hidden; }
+    .profile-bar-fill { height: 100%; border-radius: 4px; transition: width .6s ease; }
+    .cf-high { background: rgba(16,185,129,0.18) !important; color: #34d399 !important; }
+    .cf-mid  { background: rgba(245,158,11,0.18) !important; color: #fcd34d !important; }
+    .cf-low  { background: rgba(239,68,68,0.18)  !important; color: #f87171 !important; }
+    .chart-wrapper { position: relative; background: rgba(15,23,42,0.8); border: 1px solid rgba(148,163,184,0.1); border-radius: 12px; padding: 16px; }
+    tr.cross-highlight td { background: rgba(59,130,246,0.12) !important; }
+    [data-tip] { position: relative; }
+    [data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #1e293b; color: #e2e8f0; font-size: .7rem; white-space: nowrap; padding: 4px 8px; border-radius: 6px; pointer-events: none; opacity: 0; transition: opacity .15s; border: 1px solid rgba(148,163,184,.2); z-index: 50; }
+    [data-tip]:hover::after { opacity: 1; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #1e293b; }
+    ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+
+    /* ── Premium Badge ── */
+    .premium-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      background: linear-gradient(90deg, rgba(245,158,11,0.2), rgba(251,191,36,0.15));
+      border: 1px solid rgba(245,158,11,0.35);
+      color: #fcd34d; border-radius: 5px;
+      padding: 1px 6px; font-size: 0.63rem; font-weight: 700;
+      letter-spacing: .03em;
+    }
+
+    @media (max-width: 768px) { button, input, select, textarea { min-height: 44px; } .kpi-grid { grid-template-columns: repeat(2,1fr) !important; } }
+    @media (max-width: 480px) { .kpi-grid { grid-template-columns: 1fr !important; } }
+  </style>
+</head>
+
+<body class="bg-gray-900 antialiased text-gray-100">
+
+  <!-- ── Alert Toast Container ── -->
+  <div id="alertToastContainer"></div>
+
+  <!-- ── Header ── -->
+  <header class="fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur border-b border-gray-800">
+    <div class="w-full mx-auto px-6 lg:px-12 py-4 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-white">
+        <a href="/home" class="flex items-center gap-2 text-sky-400 hover:text-sky-300 transition">
+          <svg class="w-7 h-7" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="lg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#3b82f6"/><stop offset="50%" style="stop-color:#6366f1"/><stop offset="100%" style="stop-color:#8b5cf6"/></linearGradient>
+              <linearGradient id="lg2" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:#60a5fa"/><stop offset="100%" style="stop-color:#a78bfa"/></linearGradient>
+            </defs>
+            <path d="M50 5 L85 25 L85 75 L50 95 L15 75 L15 25 Z" fill="none" stroke="url(#lg1)" stroke-width="3"/>
+            <circle cx="50" cy="50" r="15" fill="url(#lg1)"/>
+            <circle cx="50" cy="35" r="3" fill="#60a5fa"/><circle cx="65" cy="42" r="3" fill="#818cf8"/><circle cx="65" cy="58" r="3" fill="#a78bfa"/>
+            <circle cx="50" cy="65" r="3" fill="#c084fc"/><circle cx="35" cy="58" r="3" fill="#818cf8"/><circle cx="35" cy="42" r="3" fill="#60a5fa"/>
+            <line x1="50" y1="35" x2="65" y2="42" stroke="#60a5fa" stroke-width="1.5" opacity="0.7"/>
+            <line x1="65" y1="42" x2="65" y2="58" stroke="#818cf8" stroke-width="1.5" opacity="0.7"/>
+            <line x1="65" y1="58" x2="50" y2="65" stroke="#a78bfa" stroke-width="1.5" opacity="0.7"/>
+            <line x1="50" y1="65" x2="35" y2="58" stroke="#c084fc" stroke-width="1.5" opacity="0.7"/>
+            <line x1="35" y1="58" x2="35" y2="42" stroke="#818cf8" stroke-width="1.5" opacity="0.7"/>
+            <line x1="35" y1="42" x2="50" y2="35" stroke="#60a5fa" stroke-width="1.5" opacity="0.7"/>
+          </svg>
+          VizChat
+        </a>
+      </h1>
+      <div class="flex gap-3 items-center">
+        <span id="botUsername" class="text-gray-300 text-sm"></span>
+        <div id="alertCountBadge" class="hidden px-2 py-0.5 bg-red-600 text-white text-xs rounded-full font-bold">0</div>
+        <a href="/home" class="bg-sky-500 text-white font-semibold px-4 py-2 rounded-lg hover:bg-sky-600 transition text-sm">Home</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="pt-20 pb-10 min-h-screen max-w-screen-2xl mx-auto px-3 sm:px-4 lg:px-12">
+
+    <!-- Title -->
+    <div class="mb-4">
+      <div class="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white mb-1">Data-Driven Chatbot Builder</h2>
+          <p class="text-gray-400 text-sm">Power BI–style analytics · Upload · Explore · Chat · AI Insights</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="premium-badge">⭐ PREMIUM FEATURES</span>
+          <span class="text-xs text-gray-500">8 Power BI features unlocked</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ROW 1 — Upload + Chat ══ -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+
+      <!-- Upload & Preview -->
+      <div class="bg-gray-800 rounded-xl border border-gray-700 p-4 sm:p-6 flex flex-col">
+        <h3 class="text-lg font-bold text-white mb-3">📁 Upload Data</h3>
+        <div id="dropZone" class="border-2 border-dashed border-gray-600 rounded-xl p-6 text-center hover:border-sky-500 transition cursor-pointer mb-4">
+          <svg class="w-10 h-10 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-gray-300 font-medium text-sm">Drag and drop your file</p>
+          <p class="text-gray-500 text-xs">or click to browse · CSV, Excel, JSON</p>
+          <input type="file" id="fileInput" class="hidden" accept=".csv,.xlsx,.xls,.json">
+        </div>
+
+        <div id="dataStats" class="hidden grid grid-cols-3 gap-2 mb-4">
+          <div class="kpi-card blue text-center"><div class="text-2xl font-bold text-sky-400" id="statRows">0</div><div class="text-xs text-gray-400 mt-1">Rows</div></div>
+          <div class="kpi-card green text-center"><div class="text-2xl font-bold text-green-400" id="statColumns">0</div><div class="text-xs text-gray-400 mt-1">Columns</div></div>
+          <div class="kpi-card purple text-center"><div class="text-2xl font-bold text-purple-400" id="statSize">0KB</div><div class="text-xs text-gray-400 mt-1">Size</div></div>
+        </div>
+
+        <div id="activeFilterBadge" class="hidden mb-3 flex items-center gap-2 flex-wrap">
+          <span class="text-xs text-gray-400">Active filters:</span>
+          <div id="filterChips" class="flex flex-wrap gap-1"></div>
+          <button id="clearAllFilters" class="text-xs text-red-400 hover:text-red-300 underline ml-auto">Clear all</button>
+        </div>
+
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="text-base font-bold text-white">Data Preview</h3>
+          <input type="text" id="tableSearch" placeholder="🔍 Search..." class="bg-gray-700 text-white rounded-lg px-3 py-1 text-xs placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500 hidden w-36 sm:w-48"/>
+        </div>
+        <div id="dataPreview" class="overflow-auto flex-1 rounded-lg" style="max-height:280px;"><p class="text-gray-400 text-sm">No data uploaded yet.</p></div>
+        <p id="rowCount" class="text-xs text-gray-500 mt-2"></p>
+      </div>
+
+      <!-- Chat -->
+      <div class="bg-gray-800 rounded-xl border border-gray-700 flex flex-col" style="min-height:450px;">
+        <div class="border-b border-gray-700 p-4 flex-shrink-0">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-white">💬 Chat with Your Data</h3>
+              <p class="text-gray-400 text-xs mt-1">NL queries · auto-chart · drill-down</p>
+            </div>
+            <span class="premium-badge">⭐ NL→Chart</span>
+          </div>
+        </div>
+        <div id="qaChips" class="hidden px-4 pt-3 flex flex-wrap gap-2 pb-1 flex-shrink-0 overflow-x-auto"></div>
+        <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 min-h-[220px] max-h-[320px] bg-gray-800/50">
+          <div class="text-center text-gray-400 text-sm mt-10">
+            <p>📤 Upload data to start chatting</p>
+            <p class="text-xs text-gray-500 mt-2">Ask: "Show bar chart of Sales" · "Who are the top 5?" · "Average price?"</p>
+          </div>
+        </div>
+        <div class="border-t border-gray-700 p-4 bg-gray-800 flex-shrink-0">
+          <form id="chatForm" class="flex gap-2">
+            <input type="text" id="chatInput" placeholder="Ask anything about your data..." class="flex-1 bg-gray-700 text-white rounded-lg px-4 py-2.5 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"/>
+            <button type="submit" id="sendBtn" class="bg-sky-500 text-white font-semibold px-5 py-2.5 rounded-lg hover:bg-sky-600 transition flex items-center gap-2 text-sm">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5.951-1.429 5.951 1.429a1 1 0 001.169-1.409l-7-14z"/></svg>
+              Send
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ KPI Dashboard ══ -->
+    <div id="kpiSection" class="hidden mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-lg font-bold text-white">📊 KPI Dashboard</h3>
+        <span class="text-xs text-gray-500">Auto-generated from your data</span>
+      </div>
+      <div id="kpiCards" class="kpi-grid grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3"></div>
+    </div>
+
+    <!-- ══ PREMIUM FEATURES TABS ══ -->
+    <div id="premiumSection" class="hidden mb-4">
+      <div class="flex items-center gap-2 mb-3 flex-wrap">
+        <span class="text-sm font-bold text-white mr-2">⭐ Premium Features</span>
+        <button class="prem-tab active" data-tab="insights">✨ AI Insights</button>
+        <button class="prem-tab" data-tab="alerts">🔔 Alerts</button>
+        <button class="prem-tab" data-tab="influencers">🔑 Key Influencers</button>
+        <button class="prem-tab" data-tab="pipeline">🔄 Data Pipeline</button>
+        <button class="prem-tab" data-tab="report">📄 Report Builder</button>
+        <button class="prem-tab" data-tab="embed">🌐 Embed</button>
+        <button class="prem-tab" data-tab="rls">🔐 Row-Level Security</button>
+        <button class="prem-tab" data-tab="versions">📦 Versions</button>
+      </div>
+
+      <!-- ── 1. AI INSIGHTS ── -->
+      <div id="tab-insights" class="tab-content feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">✨ AI Smart Narratives</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Auto-generated insights from your dataset — like Power BI's Smart Narratives (Premium only)</p>
+          </div>
+          <button id="refreshInsightsBtn" class="bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">↻ Refresh</button>
+        </div>
+        <div id="insightsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <p class="text-gray-500 text-sm col-span-3">Upload data to generate AI insights.</p>
+        </div>
+        <!-- Anomaly section -->
+        <div id="anomalySection" class="hidden mt-4 pt-4 border-t border-gray-700">
+          <h5 class="text-sm font-bold text-amber-400 mb-3">⚠️ Anomaly Detection</h5>
+          <div id="anomalyList" class="flex flex-col gap-2"></div>
+        </div>
+      </div>
+
+      <!-- ── 2. ALERTS ── -->
+      <div id="tab-alerts" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">🔔 Data-Driven Alerts</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Set threshold alerts on your metrics — like Power BI's Data Alerts (Pro)</p>
+          </div>
+          <button id="addAlertBtn" class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">+ Add Alert</button>
+        </div>
+
+        <!-- Add Alert Form -->
+        <div id="alertForm" class="hidden bg-gray-900/70 rounded-xl border border-gray-700 p-4 mb-4">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Column</label>
+              <select id="alertColumn" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"><option value="">Select column</option></select>
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Condition</label>
+              <select id="alertOperator" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none">
+                <option value="gt">Greater than (&gt;)</option>
+                <option value="lt">Less than (&lt;)</option>
+                <option value="gte">Greater than or equal</option>
+                <option value="lte">Less than or equal</option>
+                <option value="eq">Equals</option>
+              </select>
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Threshold</label>
+              <input type="number" id="alertThreshold" placeholder="e.g. 1000" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"/>
+            </div>
+            <div>
+              <label class="text-xs text-gray-400 mb-1 block">Alert Name</label>
+              <input type="text" id="alertName" placeholder="e.g. High Sales Alert" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"/>
+            </div>
+          </div>
+          <div class="flex gap-2">
+            <button id="saveAlertBtn" class="bg-sky-600 hover:bg-sky-500 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Save Alert</button>
+            <button id="cancelAlertBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-xs transition">Cancel</button>
+          </div>
+        </div>
+
+        <div id="alertsList" class="flex flex-col gap-3">
+          <p class="text-gray-500 text-sm">No alerts configured yet. Click "+ Add Alert" to create one.</p>
+        </div>
+      </div>
+
+      <!-- ── 3. KEY INFLUENCERS ── -->
+      <div id="tab-influencers" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">🔑 Key Influencers</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Discover which columns drive your target metric — like Power BI's Key Influencers visual (Premium AI)</p>
+          </div>
+          <div class="flex gap-2 items-center">
+            <select id="influencerTarget" class="bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500"><option value="">Select target column</option></select>
+            <button id="runInfluencersBtn" class="bg-purple-700 hover:bg-purple-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Analyse</button>
+          </div>
+        </div>
+        <div id="influencersResult" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <p class="text-gray-500 text-sm col-span-2">Select a numeric target column and click Analyse.</p>
+        </div>
+      </div>
+
+      <!-- ── 4. DATA PIPELINE ── -->
+      <div id="tab-pipeline" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">🔄 Data Pipeline Builder</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Describe transformations in plain English — like Power BI's Dataflows (Pro/Premium)</p>
+          </div>
+          <button id="runPipelineBtn" class="bg-teal-700 hover:bg-teal-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">▶ Run Pipeline</button>
+        </div>
+        <!-- Pipeline input -->
+        <div class="mb-4">
+          <label class="text-xs text-gray-400 mb-2 block">Describe your transformation in plain English:</label>
+          <textarea id="pipelineInput" rows="3" placeholder="e.g. Remove empty rows, normalize the price column, filter where quantity > 0, rename 'prod_name' to 'Product'" class="w-full bg-gray-900/70 text-white rounded-xl border border-gray-700 px-4 py-3 text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"></textarea>
+        </div>
+        <!-- Pipeline steps visualization -->
+        <div id="pipelineSteps" class="flex flex-col gap-1 mb-4"></div>
+        <!-- Pipeline log -->
+        <div id="pipelineLog" class="hidden bg-gray-900/80 rounded-xl border border-gray-700 p-4">
+          <h5 class="text-xs font-bold text-green-400 mb-2">Pipeline Log</h5>
+          <div id="pipelineLogContent" class="text-xs text-gray-400 font-mono space-y-1 max-h-32 overflow-y-auto"></div>
+        </div>
+      </div>
+
+      <!-- ── 5. REPORT BUILDER ── -->
+      <div id="tab-report" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">📄 Paginated Report Builder</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Pixel-perfect print-ready reports — like Power BI's Paginated Reports (Premium only)</p>
+          </div>
+          <button id="generateReportBtn" class="bg-orange-700 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">📥 Export PDF</button>
+        </div>
+
+        <!-- Template picker -->
+        <div class="mb-4">
+          <p class="text-xs text-gray-400 mb-2">Choose a report template:</p>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="report-template selected" data-template="summary" onclick="selectTemplate(this)">
+              <div class="rt-icon">📊</div><div class="rt-name">Summary Report</div><div class="rt-desc">KPIs + top records</div>
+            </div>
+            <div class="report-template" data-template="detail" onclick="selectTemplate(this)">
+              <div class="rt-icon">📋</div><div class="rt-name">Detail Report</div><div class="rt-desc">Full data table</div>
+            </div>
+            <div class="report-template" data-template="executive" onclick="selectTemplate(this)">
+              <div class="rt-icon">🎯</div><div class="rt-name">Executive</div><div class="rt-desc">Charts + insights</div>
+            </div>
+            <div class="report-template" data-template="comparison" onclick="selectTemplate(this)">
+              <div class="rt-icon">🆚</div><div class="rt-name">Comparison</div><div class="rt-desc">Top vs bottom</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report config -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Report Title</label>
+            <input type="text" id="reportTitle" value="Data Report" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Subtitle / Description</label>
+            <input type="text" id="reportSubtitle" placeholder="e.g. Q4 2024 Analysis" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Max rows in table</label>
+            <input type="number" id="reportMaxRows" value="50" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none"/>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Include sections</label>
+            <div class="flex flex-wrap gap-3 mt-1">
+              <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="rptKpi" checked class="accent-orange-500"> KPIs</label>
+              <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="rptInsights" checked class="accent-orange-500"> AI Insights</label>
+              <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="rptTable" checked class="accent-orange-500"> Data Table</label>
+              <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="rptProfile" class="accent-orange-500"> Data Profile</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report preview snippet -->
+        <div id="reportPreview" class="hidden mt-4 bg-white rounded-xl p-5 text-gray-800 text-sm overflow-auto max-h-64">
+          <p class="text-gray-500 text-center">Click "Export PDF" to generate your report.</p>
+        </div>
+      </div>
+
+      <!-- ── 6. EMBED ── -->
+      <div id="tab-embed" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">🌐 Embed Generator</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Generate shareable embed codes — like Power BI Embedded (Premium Embedded)</p>
+          </div>
+          <button id="generateEmbedBtn" class="bg-cyan-700 hover:bg-cyan-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">Generate</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Embed Type</label>
+            <select id="embedType" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none">
+              <option value="iframe">iFrame Snippet</option>
+              <option value="js">JavaScript SDK</option>
+              <option value="react">React Component</option>
+              <option value="link">Public Link</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Access Mode</label>
+            <select id="embedAccess" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none">
+              <option value="view">View only</option>
+              <option value="interact">Interactive</option>
+              <option value="full">Full access</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs text-gray-400 mb-1 block">Width</label>
+            <input type="text" id="embedWidth" value="100%" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none"/>
+          </div>
+        </div>
+        <div class="flex gap-2 mb-3 flex-wrap">
+          <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="embedShowChat" checked class="accent-cyan-500"> Show Chat</label>
+          <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="embedShowCharts" checked class="accent-cyan-500"> Show Charts</label>
+          <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="embedShowKpi" checked class="accent-cyan-500"> Show KPIs</label>
+          <label class="flex items-center gap-1 text-xs text-gray-300"><input type="checkbox" id="embedDarkMode" checked class="accent-cyan-500"> Dark Mode</label>
+        </div>
+        <div id="embedOutput" class="hidden">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs text-gray-400 font-semibold">Generated Code</span>
+            <button id="copyEmbedBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition">📋 Copy</button>
+          </div>
+          <div id="embedCodeBox" class="embed-code-box"></div>
+          <p class="text-xs text-gray-500 mt-2">⚠️ This embed links to your current session. In production, connect to a persistent data source.</p>
+        </div>
+      </div>
+
+      <!-- ── 7. ROW-LEVEL SECURITY ── -->
+      <div id="tab-rls" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">🔐 Row-Level Security</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Define who sees what data based on role — like Power BI's RLS (Pro)</p>
+          </div>
+          <button id="addRoleBtn" class="bg-rose-700 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">+ Add Role</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-gray-900/70 rounded-xl border border-gray-700 p-4">
+            <h5 class="text-sm font-bold text-white mb-3">Role Configuration</h5>
+            <div class="space-y-3">
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Role Name</label>
+                <input type="text" id="rlsRoleName" placeholder="e.g. Sales Manager" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"/>
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Filter Column</label>
+                <select id="rlsColumn" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none"><option value="">Select column</option></select>
+              </div>
+              <div>
+                <label class="text-xs text-gray-400 mb-1 block">Allowed Values (comma separated)</label>
+                <input type="text" id="rlsValues" placeholder="e.g. North, East" class="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-rose-500"/>
+              </div>
+              <button id="saveRoleBtn" class="bg-rose-700 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-semibold w-full transition">Save Role</button>
+            </div>
+          </div>
+          <div>
+            <h5 class="text-sm font-bold text-white mb-3">Defined Roles</h5>
+            <div id="rolesList" class="space-y-2">
+              <p class="text-gray-500 text-xs">No roles defined yet.</p>
+            </div>
+            <div class="mt-4 pt-4 border-t border-gray-700">
+              <h5 class="text-sm font-bold text-white mb-2">Preview as Role</h5>
+              <div class="flex gap-2">
+                <select id="previewRoleSelect" class="flex-1 bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none"><option value="">All data (Admin)</option></select>
+                <button id="applyRolePreviewBtn" class="bg-rose-700 hover:bg-rose-600 text-white px-3 py-2 rounded-lg text-xs font-semibold transition">Apply</button>
+                <button id="clearRolePreviewBtn" class="bg-gray-700 hover:bg-gray-600 text-white px-3 py-2 rounded-lg text-xs transition">Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── 8. VERSIONS ── -->
+      <div id="tab-versions" class="tab-content hidden feature-panel p-5">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h4 class="text-base font-bold text-white">📦 Deployment Pipeline</h4>
+            <p class="text-xs text-gray-400 mt-0.5">Save, tag and promote bot versions — like Power BI's Deployment Pipelines (Premium)</p>
+          </div>
+          <button id="saveVersionBtn" class="bg-indigo-700 hover:bg-indigo-600 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">💾 Save Version</button>
+        </div>
+
+        <!-- Environments -->
+        <div class="grid grid-cols-3 gap-4 mb-4">
+          <div class="bg-gray-900/70 rounded-xl border border-blue-500/30 p-4 text-center">
+            <div class="text-2xl mb-1">🔧</div>
+            <div class="text-sm font-bold text-blue-400">Development</div>
+            <div class="text-xs text-gray-500 mt-1">Current workspace</div>
+            <div id="devStatus" class="mt-2 text-xs text-green-400">● Active</div>
+          </div>
+          <div class="relative flex items-center justify-center">
+            <div class="flex flex-col items-center gap-1">
+              <button id="promoteToStagingBtn" class="bg-gray-700 hover:bg-yellow-700 text-white px-3 py-1 rounded text-xs transition w-full">Deploy →</button>
+              <div class="text-xs text-gray-500">promote</div>
+            </div>
+          </div>
+          <div class="bg-gray-900/70 rounded-xl border border-yellow-500/30 p-4 text-center">
+            <div class="text-2xl mb-1">🧪</div>
+            <div class="text-sm font-bold text-yellow-400">Staging</div>
+            <div class="text-xs text-gray-500 mt-1">Testing environment</div>
+            <div id="stagingStatus" class="mt-2 text-xs text-gray-500">● Empty</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4">
+          <div></div>
+          <div class="relative flex items-center justify-center">
+            <div class="flex flex-col items-center gap-1">
+              <button id="promoteToProductionBtn" class="bg-gray-700 hover:bg-green-700 text-white px-3 py-1 rounded text-xs transition w-full">Deploy →</button>
+              <div class="text-xs text-gray-500">promote</div>
+            </div>
+          </div>
+          <div class="bg-gray-900/70 rounded-xl border border-green-500/30 p-4 text-center">
+            <div class="text-2xl mb-1">🚀</div>
+            <div class="text-sm font-bold text-green-400">Production</div>
+            <div class="text-xs text-gray-500 mt-1">Live environment</div>
+            <div id="productionStatus" class="mt-2 text-xs text-gray-500">● Empty</div>
+          </div>
+        </div>
+
+        <!-- Version History -->
+        <div class="mt-5 pt-4 border-t border-gray-700">
+          <h5 class="text-sm font-bold text-white mb-3">Version History</h5>
+          <div id="versionsList" class="space-y-2">
+            <p class="text-gray-500 text-xs">No versions saved yet.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Slicers + Visualizations ══ -->
+    <div id="visualizationSection" class="hidden mb-4">
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <!-- Slicer Panel -->
+        <div id="slicerPanel" class="p-4 flex flex-col gap-4 lg:col-span-1">
+          <div class="flex items-center justify-between">
+            <h4 class="text-sm font-bold text-white">🎛️ Slicers</h4>
+            <button id="resetSlicers" class="text-xs text-red-400 hover:text-red-300 underline">Reset</button>
+          </div>
+          <div id="slicerControls" class="flex flex-col gap-4 overflow-y-auto" style="max-height:420px;"></div>
+        </div>
+
+        <!-- Charts area -->
+        <div class="lg:col-span-3 flex flex-col gap-4">
+          <!-- Toolbar -->
+          <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+            <div class="flex flex-wrap items-center gap-2">
+              <select id="columnSelector" class="bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 flex-1 min-w-[130px]"><option value="">Select Column</option></select>
+              <select id="chart2ndColumn" class="bg-gray-700 text-white rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-sky-500 flex-1 min-w-[130px]"><option value="">2nd Column (optional)</option></select>
+              <button id="barChartBtn"   data-tip="Bar Chart"    class="viz-btn bg-blue-600   hover:bg-blue-700   px-3 py-2 rounded-lg text-xs font-semibold transition">📊 Bar</button>
+              <button id="pieChartBtn"   data-tip="Pie Chart"    class="viz-btn bg-purple-600 hover:bg-purple-700 px-3 py-2 rounded-lg text-xs font-semibold transition">🥧 Pie</button>
+              <button id="lineChartBtn"  data-tip="Line Chart"   class="viz-btn bg-cyan-600   hover:bg-cyan-700   px-3 py-2 rounded-lg text-xs font-semibold transition">📈 Line</button>
+              <button id="areaChartBtn"  data-tip="Area Chart"   class="viz-btn bg-teal-600   hover:bg-teal-700   px-3 py-2 rounded-lg text-xs font-semibold transition">🏔️ Area</button>
+              <button id="scatterBtn"    data-tip="Scatter Plot"  class="viz-btn bg-pink-600   hover:bg-pink-700   px-3 py-2 rounded-lg text-xs font-semibold transition">✦ Scatter</button>
+              <button id="summaryBtn"    data-tip="Statistics"   class="viz-btn bg-amber-600  hover:bg-amber-700  px-3 py-2 rounded-lg text-xs font-semibold transition">🧮 Stats</button>
+              <button id="profileBtn"    data-tip="Data Profile"  class="viz-btn bg-rose-600   hover:bg-rose-700   px-3 py-2 rounded-lg text-xs font-semibold transition">🔬 Profile</button>
+              <button id="tableComparisonBtn" data-tip="Full Table" class="viz-btn bg-indigo-600 hover:bg-indigo-700 px-3 py-2 rounded-lg text-xs font-semibold transition">📋 Table</button>
+            </div>
+          </div>
+
+          <!-- Chart -->
+          <div id="chartSection" class="hidden chart-wrapper">
+            <div class="flex justify-between items-center mb-3">
+              <h4 id="chartTitle" class="text-sm font-bold text-white"></h4>
+              <div class="flex gap-2">
+                <button id="downloadChartBtn" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition">⬇ PNG</button>
+                <button id="closeChartBtn" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition">✕ Close</button>
+              </div>
+            </div>
+            <canvas id="dataChart" style="max-height:380px;"></canvas>
+          </div>
+
+          <!-- Summary Stats -->
+          <div id="summarySection" class="hidden chart-wrapper">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-sm font-bold text-white">🧮 Summary Statistics</h4>
+              <button id="closeSummaryBtn" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">✕</button>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+              <div class="kpi-card blue"><div class="text-xs text-gray-400 mb-1">Total Records</div><div class="text-xl font-bold text-blue-400" id="summaryTotal">0</div></div>
+              <div class="kpi-card green"><div class="text-xs text-gray-400 mb-1">Mean</div><div class="text-xl font-bold text-green-400" id="summaryMean">0</div></div>
+              <div class="kpi-card purple"><div class="text-xs text-gray-400 mb-1">Max</div><div class="text-xl font-bold text-purple-400" id="summaryMax">0</div></div>
+              <div class="kpi-card orange"><div class="text-xs text-gray-400 mb-1">Min</div><div class="text-xl font-bold text-orange-400" id="summaryMin">0</div></div>
+            </div>
+            <div id="summaryDetails" class="bg-gray-900/70 rounded-lg p-4 text-gray-300 text-xs whitespace-pre-wrap max-h-64 overflow-y-auto font-mono leading-relaxed"></div>
+          </div>
+
+          <!-- Data Profile -->
+          <div id="profileSection" class="hidden chart-wrapper">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-sm font-bold text-white">🔬 Data Profile</h4>
+              <button id="closeProfileBtn" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">✕</button>
+            </div>
+            <div id="profileContent" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+          </div>
+
+          <!-- Table Comparison -->
+          <div id="tableComparisonSection" class="hidden chart-wrapper">
+            <div class="flex justify-between items-center mb-4">
+              <h4 class="text-sm font-bold text-white">📋 Data Table</h4>
+              <div class="flex gap-2 flex-wrap">
+                <input type="text" id="comparisonTableSearch" placeholder="🔍 Search..." class="bg-gray-700 text-white rounded px-3 py-1 text-xs placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-sky-500"/>
+                <select id="sortColumnSelect" class="bg-gray-700 text-white rounded px-2 py-1 text-xs focus:outline-none"><option value="">Sort by…</option></select>
+                <button id="sortDirBtn" class="bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-600">↑ ASC</button>
+                <button id="exportExcelBtn" class="bg-green-700 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">⬇ Excel</button>
+                <button id="closeComparisonBtn" class="bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded text-xs">✕</button>
+              </div>
+            </div>
+            <div class="bg-gray-900/70 rounded-lg overflow-hidden border border-gray-700">
+              <div id="comparisonTableContainer" class="overflow-x-auto" style="max-height:380px;overflow-y:auto;">
+                <table class="w-full text-xs border-collapse" id="comparisonTable">
+                  <thead class="sticky top-0 bg-gray-800"><tr id="comparisonTableHeader"></tr></thead>
+                  <tbody id="comparisonTableBody" class="divide-y divide-gray-800"></tbody>
+                </table>
+              </div>
+              <div class="bg-gray-800 px-4 py-2 border-t border-gray-700 text-xs text-gray-400 flex justify-between">
+                <span id="comparisonRowCount">No data</span><span id="comparisonColCount"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Action Bar ── -->
+    <div class="bg-gray-800 rounded-xl border border-gray-700 p-4">
+      <div class="flex justify-between items-center flex-wrap gap-3">
+        <div>
+          <p class="text-gray-400 text-xs">Status</p>
+          <p id="botStatus" class="text-white font-semibold text-sm">Ready</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button id="clearChatBtn"      class="bg-red-700 hover:bg-red-600 text-white font-semibold px-4 py-2 rounded-lg transition text-xs" data-tip="Clear chat">🗑️ Clear Chat</button>
+          <button id="downloadDataBtn"   class="bg-green-700 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg transition text-xs" data-tip="Export CSV">📥 CSV</button>
+          <button id="exportExcelBtnMain" class="bg-emerald-700 hover:bg-emerald-600 text-white font-semibold px-4 py-2 rounded-lg transition text-xs" data-tip="Export Excel">📊 Excel</button>
+          <button id="exportPdfBtn"      class="bg-orange-700 hover:bg-orange-600 text-white font-semibold px-4 py-2 rounded-lg transition text-xs" data-tip="Export PDF">📄 PDF</button>
+          <button id="saveBotBtn"        class="bg-indigo-700 hover:bg-indigo-600 text-white font-semibold px-4 py-2 rounded-lg transition text-xs" data-tip="Save bot">💾 Save Bot</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script type="module">
+
+/* ───────── State ───────── */
+let rawData = [], currentData = [], uploadedFile = null, currentChart = null;
+let slicerState = {}, sortState = { col: null, dir: 'asc' };
+let alertRules = [], rlsRoles = [], botVersions = [];
+let selectedTemplate = 'summary', activeRoleFilter = null;
+let alertCheckInterval = null;
+
+/* ───────── DOM ───────── */
+const chatMessages = document.getElementById('chatMessages');
+const chatForm = document.getElementById('chatForm');
+const chatInput = document.getElementById('chatInput');
+const botStatus = document.getElementById('botStatus');
+const tableSearch = document.getElementById('tableSearch');
+
+/* ───────── Template loader ───────── */
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.get('template') === 'true') {
+  const td = sessionStorage.getItem('templateData'), tn = sessionStorage.getItem('templateName');
+  if (td) {
+    rawData = JSON.parse(td); currentData = [...rawData];
+    uploadedFile = { name: tn + '.csv' }; botStatus.textContent = `Loaded: ${tn}`;
+    onDataReady(); sessionStorage.removeItem('templateData'); sessionStorage.removeItem('templateName');
+  }
+}
+
+/* ═══════════════════════════════════
+   FILE HANDLING
+═══════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  const dropZone = document.getElementById('dropZone');
+  const fileInput = document.getElementById('fileInput');
+  dropZone.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', function() { if (this.files[0]) handleFile(this.files[0]); });
+  ['dragenter','dragover','dragleave','drop'].forEach(ev => {
+    dropZone.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+    document.body.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); });
+  });
+  ['dragenter','dragover'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.add('border-sky-500','bg-sky-500/10')));
+  ['dragleave','drop'].forEach(ev => dropZone.addEventListener(ev, () => dropZone.classList.remove('border-sky-500','bg-sky-500/10')));
+  dropZone.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) handleFile(f); });
+});
+
+function handleFile(file) {
+  if (!file) return;
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      let data = [];
+      const content = e.target.result;
+      if (file.name.endsWith('.csv')) data = parseCSV(content);
+      else if (file.name.endsWith('.json')) { data = JSON.parse(content); if (!Array.isArray(data)) data = [data]; }
+      else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+        const wb = XLSX.read(content, { type: 'binary' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        data = XLSX.utils.sheet_to_json(ws, { defval: '' });
+      } else { addChatMessage('bot', '❌ Unsupported format. Use CSV, JSON, or Excel.'); return; }
+      if (data.length === 0) { addChatMessage('bot', '⚠️ No data rows found. Check your file.'); return; }
+      rawData = data; currentData = [...rawData]; slicerState = {};
+      onDataReady();
+      chatMessages.innerHTML = '';
+      addChatMessage('bot', `✅ Loaded **${data.length} rows × ${Object.keys(data[0]).length} columns** from *${file.name}*.\n\nTry the AI Insights tab, or ask me anything!`);
+    } catch (err) { addChatMessage('bot', '❌ Parse error: ' + err.message); }
+  };
+  if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) reader.readAsBinaryString(file);
+  else reader.readAsText(file);
+}
+
+function parseCSV(content) {
+  const lines = content.trim().split('\n').filter(l => l.trim());
+  if (lines.length < 2) throw new Error('CSV needs a header row and at least one data row.');
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+  return lines.slice(1).filter(l => l.trim()).map(line => {
+    const vals = smartSplitCSV(line); const obj = {};
+    headers.forEach((h, i) => { obj[h] = (vals[i] || '').trim(); }); return obj;
+  });
+}
+function smartSplitCSV(line) {
+  const result = []; let cur = '', inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i];
+    if (c === '"') { inQ = !inQ; continue; }
+    if (c === ',' && !inQ) { result.push(cur); cur = ''; continue; }
+    cur += c;
+  }
+  result.push(cur); return result;
+}
+
+/* ═══════════════════════════════════
+   ON DATA READY
+═══════════════════════════════════ */
+function onDataReady() {
+  displayDataPreview(currentData);
+  buildKPICards();
+  buildSlicers();
+  buildQAChips();
+  populateColumnSelector();
+  populateAlertColumns();
+  populateRLSColumns();
+  populateInfluencerTarget();
+  document.getElementById('visualizationSection').classList.remove('hidden');
+  document.getElementById('kpiSection').classList.remove('hidden');
+  document.getElementById('premiumSection').classList.remove('hidden');
+  botStatus.textContent = `${currentData.length} rows loaded`;
+  generateAIInsights();
+  startAlertMonitor();
+}
+
+/* ═══════════════════════════════════
+   DATA PREVIEW
+═══════════════════════════════════ */
+function displayDataPreview(data) {
+  if (!data.length) return;
+  const headers = Object.keys(data[0]);
+  const numCols = headers.filter(h => data.every(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const colRanges = {};
+  numCols.forEach(h => { const vals = data.map(r => parseFloat(r[h])); colRanges[h] = { min: Math.min(...vals), max: Math.max(...vals) }; });
+  let html = '<div style="overflow-x:auto;"><table class="w-full text-xs border-collapse"><thead class="sticky top-0"><tr>';
+  headers.forEach(h => { html += `<th class="px-3 py-2 text-left text-gray-300 font-semibold border border-gray-700 bg-gray-700 whitespace-nowrap">${h}</th>`; });
+  html += '</tr></thead><tbody>';
+  data.slice(0, 500).forEach((row, ri) => {
+    html += `<tr class="border-t border-gray-700 hover:bg-gray-700/40 transition" data-ri="${ri}">`;
+    headers.forEach(h => {
+      const raw = row[h] !== undefined ? row[h] : '';
+      let cls = 'px-3 py-2 text-gray-400 border border-gray-700/50';
+      if (numCols.includes(h)) { const v = parseFloat(raw); const { min, max } = colRanges[h]; const pct = max !== min ? (v - min) / (max - min) : 0.5; cls += pct >= 0.67 ? ' cf-high' : pct >= 0.33 ? ' cf-mid' : ' cf-low'; }
+      html += `<td class="${cls}" title="${String(raw)}">${String(raw).substring(0, 60)}</td>`;
+    }); html += '</tr>';
+  });
+  html += '</tbody></table></div>';
+  const pv = document.getElementById('dataPreview');
+  pv.innerHTML = html; pv.style.overflow = 'auto';
+  document.getElementById('rowCount').textContent = `Showing ${Math.min(data.length, 500)} of ${data.length} rows · 🟢 high  🟡 mid  🔴 low`;
+  const size = (JSON.stringify(data).length / 1024).toFixed(1);
+  document.getElementById('statRows').textContent = rawData.length;
+  document.getElementById('statColumns').textContent = headers.length;
+  document.getElementById('statSize').textContent = size + ' KB';
+  document.getElementById('dataStats').classList.remove('hidden');
+  document.getElementById('tableSearch').classList.remove('hidden');
+}
+
+tableSearch.addEventListener('keyup', e => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll('#dataPreview tbody tr').forEach(tr => { tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none'; });
+});
+
+/* ═══════════════════════════════════
+   KPI CARDS
+═══════════════════════════════════ */
+function buildKPICards() {
+  const headers = Object.keys(currentData[0]);
+  const numericCols = headers.filter(h => currentData.slice(0, 50).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const colors = ['blue','green','purple','orange','red','cyan'];
+  const emojis = ['📦','💰','📈','⚡','🎯','🔢'];
+  const container = document.getElementById('kpiCards');
+  container.innerHTML = '';
+  addKPICard(container, '📋 Total Rows', rawData.length.toLocaleString(), `Filtered: ${currentData.length}`, 'blue', currentData.length < rawData.length ? 'trend-down' : 'trend-flat');
+  numericCols.slice(0, 5).forEach((col, i) => {
+    const vals = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+    if (!vals.length) return;
+    const sum = vals.reduce((a, b) => a + b, 0);
+    addKPICard(container, emojis[(i + 1) % emojis.length] + ' ' + col, formatNum(sum), `Avg: ${formatNum(sum / vals.length)}`, colors[(i + 1) % colors.length], 'trend-flat');
+  });
+}
+function addKPICard(container, label, value, sub, color, trendClass) {
+  const div = document.createElement('div');
+  div.className = `kpi-card ${color}`;
+  div.innerHTML = `<div class="text-xs text-gray-400 mb-1 truncate">${label}</div><div class="text-xl font-bold text-white">${value}</div><div class="text-xs mt-1 ${trendClass}">${sub}</div>`;
+  container.appendChild(div);
+}
+
+/* ═══════════════════════════════════
+   PREMIUM TABS
+═══════════════════════════════════ */
+document.querySelectorAll('.prem-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.prem-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).classList.remove('hidden');
+  });
+});
+
+/* ═══════════════════════════════════
+   1. AI SMART NARRATIVES
+═══════════════════════════════════ */
+function generateAIInsights() {
+  if (!currentData.length) return;
+  const headers = Object.keys(currentData[0]);
+  const n = currentData.length;
+  const numCols = headers.filter(h => currentData.slice(0,20).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const catCols = headers.filter(h => { const u = new Set(currentData.map(r=>r[h])); return u.size<=30 && u.size>1; });
+  const insights = [];
+
+  // Insight 1: Row/Col overview
+  insights.push({ icon: '📊', text: `Dataset contains <span class="ins-badge">${n.toLocaleString()} records</span> across <span class="ins-badge">${headers.length} fields</span>. ${numCols.length} numeric and ${catCols.length} categorical columns detected.` });
+
+  // Insight 2: Top numeric column
+  if (numCols.length) {
+    const col = numCols[0];
+    const vals = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+    const sum = vals.reduce((a,b)=>a+b,0);
+    const avg = sum/vals.length;
+    const max = Math.max(...vals);
+    const maxRow = currentData.find(r => parseFloat(r[col]) === max);
+    insights.push({ icon: '💰', text: `Total <span class="ins-badge">${col}</span> is <span class="ins-badge">${formatNum(sum)}</span>, averaging <span class="ins-badge">${formatNum(avg)}</span> per record. Highest single value is <span class="ins-badge">${formatNum(max)}</span>.` });
+    if (maxRow) {
+      const name = getProductName(maxRow);
+      insights.push({ icon: '🏆', text: `Top performer: <span class="ins-badge">${name}</span> has the highest <span class="ins-badge">${col}</span> of <span class="ins-badge">${formatNum(max)}</span>.` });
+    }
+  }
+
+  // Insight 3: Top category breakdown
+  if (catCols.length && numCols.length) {
+    const catCol = catCols[0], numCol = numCols[0];
+    const groupSums = {};
+    currentData.forEach(r => { const k = r[catCol]||'N/A'; const v = parseFloat(r[numCol])||0; groupSums[k] = (groupSums[k]||0) + v; });
+    const sorted = Object.entries(groupSums).sort((a,b)=>b[1]-a[1]);
+    if (sorted.length >= 2) {
+      const total = sorted.reduce((a,b) => a+b[1],0);
+      const top = sorted[0];
+      const pct = total > 0 ? ((top[1]/total)*100).toFixed(1) : 0;
+      insights.push({ icon: '🥇', text: `Top <span class="ins-badge">${catCol}</span>: <span class="ins-badge">${top[0]}</span> accounts for <span class="ins-badge">${pct}%</span> of total ${numCol} (${formatNum(top[1])}).` });
+    }
+  }
+
+  // Insight 4: Completeness
+  const allVals = headers.flatMap(h => currentData.map(r => r[h]));
+  const empties = allVals.filter(v => v === '' || v === null || v === undefined).length;
+  const completeness = (((allVals.length - empties) / allVals.length) * 100).toFixed(1);
+  const quality = parseFloat(completeness) >= 95 ? '✅ Excellent' : parseFloat(completeness) >= 80 ? '⚠️ Good' : '❌ Needs cleaning';
+  insights.push({ icon: '🔬', text: `Data completeness: <span class="ins-badge">${completeness}%</span> — ${quality}. ${empties > 0 ? `${empties} missing values found.` : 'No missing values detected.'}` });
+
+  // Insight 5: Variance / spread for first numeric
+  if (numCols.length) {
+    const col = numCols[0];
+    const vals = currentData.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v));
+    const std = getStdDev(vals);
+    const avg = vals.reduce((a,b)=>a+b,0)/vals.length;
+    const cv = avg > 0 ? ((std/avg)*100).toFixed(1) : 0;
+    const spread = parseFloat(cv) < 30 ? 'Low variability — consistent dataset' : parseFloat(cv) < 70 ? 'Moderate variability' : 'High variability — diverse dataset';
+    insights.push({ icon: '📉', text: `<span class="ins-badge">${col}</span> coefficient of variation: <span class="ins-badge">${cv}%</span>. ${spread}.` });
+  }
+
+  // Insight 6: Duplicate check
+  const strs = currentData.map(r => JSON.stringify(r));
+  const uniqCount = new Set(strs).size;
+  const dups = n - uniqCount;
+  insights.push({ icon: dups > 0 ? '⚠️' : '✅', text: dups > 0 ? `Found <span class="ins-badge">${dups} duplicate rows</span> in the dataset. Consider deduplication for accurate analysis.` : `No duplicate rows detected. Dataset is clean.` });
+
+  const grid = document.getElementById('insightsGrid');
+  grid.innerHTML = insights.map(ins => `
+    <div class="insight-card">
+      <span class="ins-icon">${ins.icon}</span>
+      ${ins.text}
+    </div>`).join('');
+
+  // Anomaly detection
+  detectAnomalies();
+}
+
+function detectAnomalies() {
+  if (!currentData.length) return;
+  const headers = Object.keys(currentData[0]);
+  const numCols = headers.filter(h => currentData.slice(0,20).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const anomalies = [];
+
+  numCols.slice(0,3).forEach(col => {
+    const vals = currentData.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v));
+    if (vals.length < 5) return;
+    const mean = vals.reduce((a,b)=>a+b,0)/vals.length;
+    const std = getStdDev(vals);
+    const threshold = mean + 3*std;
+    const outliers = currentData.filter(r => { const v = parseFloat(r[col]); return !isNaN(v) && v > threshold; });
+    if (outliers.length > 0) {
+      anomalies.push({ col, count: outliers.length, threshold: formatNum(threshold), example: getProductName(outliers[0]) });
+    }
+  });
+
+  if (anomalies.length > 0) {
+    const aSection = document.getElementById('anomalySection');
+    aSection.classList.remove('hidden');
+    document.getElementById('anomalyList').innerHTML = anomalies.map(a => `
+      <div class="flex items-start gap-3 bg-amber-900/20 border border-amber-500/25 rounded-lg px-4 py-3">
+        <span class="text-amber-400 text-lg mt-0.5">⚠️</span>
+        <div>
+          <p class="text-sm text-amber-300 font-semibold">${a.count} outlier${a.count>1?'s':''} in <span class="ins-badge">${a.col}</span></p>
+          <p class="text-xs text-gray-400 mt-1">Values exceed 3σ threshold of ${a.threshold}. Example: <em>${a.example}</em></p>
+        </div>
+      </div>`).join('');
+  }
+}
+
+document.getElementById('refreshInsightsBtn').addEventListener('click', generateAIInsights);
+
+/* ═══════════════════════════════════
+   2. ALERT BUILDER
+═══════════════════════════════════ */
+function populateAlertColumns() {
+  const headers = Object.keys(currentData[0] || {});
+  const numCols = headers.filter(h => currentData.slice(0,10).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const sel = document.getElementById('alertColumn');
+  sel.innerHTML = '<option value="">Select column</option>';
+  numCols.forEach(h => { const o = document.createElement('option'); o.value=h; o.textContent=h; sel.appendChild(o); });
+}
+
+document.getElementById('addAlertBtn').addEventListener('click', () => {
+  document.getElementById('alertForm').classList.toggle('hidden');
+});
+document.getElementById('cancelAlertBtn').addEventListener('click', () => {
+  document.getElementById('alertForm').classList.add('hidden');
+});
+
+document.getElementById('saveAlertBtn').addEventListener('click', () => {
+  const col = document.getElementById('alertColumn').value;
+  const op = document.getElementById('alertOperator').value;
+  const threshold = parseFloat(document.getElementById('alertThreshold').value);
+  const name = document.getElementById('alertName').value || `Alert on ${col}`;
+  if (!col || isNaN(threshold)) { alert('Fill in column and threshold.'); return; }
+  alertRules.push({ id: Date.now(), name, col, op, threshold, triggered: false, active: true });
+  document.getElementById('alertForm').classList.add('hidden');
+  document.getElementById('alertColumn').value = '';
+  document.getElementById('alertThreshold').value = '';
+  document.getElementById('alertName').value = '';
+  renderAlertsList();
+  checkAlerts();
+});
+
+function renderAlertsList() {
+  const container = document.getElementById('alertsList');
+  if (!alertRules.length) { container.innerHTML = '<p class="text-gray-500 text-sm">No alerts configured yet.</p>'; return; }
+  container.innerHTML = alertRules.map(rule => {
+    const opLabels = { gt:'>',lt:'<',gte:'≥',lte:'≤',eq:'=' };
+    return `
+    <div class="alert-rule ${rule.triggered ? 'triggered' : 'ok'}" id="rule-${rule.id}">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span class="text-lg">${rule.triggered ? '🔴' : '🟢'}</span>
+          <div>
+            <p class="text-sm font-semibold text-white">${rule.name}</p>
+            <p class="text-xs text-gray-400">${rule.col} ${opLabels[rule.op]} ${formatNum(rule.threshold)}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="alert-status text-xs font-semibold">${rule.triggered ? '⚠️ TRIGGERED' : '✓ OK'}</span>
+          <button onclick="deleteAlert(${rule.id})" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-900/20 transition">✕</button>
+        </div>
+      </div>
+      ${rule.triggered ? `<p class="text-xs text-red-300 mt-2 ml-8">Alert condition met — ${rule.triggeredRows || 0} row(s) match.</p>` : ''}
+    </div>`;
+  }).join('');
+}
+
+window.deleteAlert = (id) => {
+  alertRules = alertRules.filter(r => r.id !== id);
+  renderAlertsList();
+  updateAlertCount();
+};
+
+function checkAlerts() {
+  if (!currentData.length || !alertRules.length) return;
+  let triggered = 0;
+  alertRules.forEach(rule => {
+    const ops = { gt:(a,b)=>a>b, lt:(a,b)=>a<b, gte:(a,b)=>a>=b, lte:(a,b)=>a<=b, eq:(a,b)=>a===b };
+    const matches = currentData.filter(r => { const v = parseFloat(r[rule.col]); return !isNaN(v) && ops[rule.op](v, rule.threshold); });
+    const wasTriggered = rule.triggered;
+    rule.triggered = matches.length > 0;
+    rule.triggeredRows = matches.length;
+    if (rule.triggered && !wasTriggered) {
+      showAlertToast(rule);
+      triggered++;
+    }
+  });
+  renderAlertsList();
+  updateAlertCount();
+}
+
+function showAlertToast(rule) {
+  const opLabels = { gt:'>',lt:'<',gte:'≥',lte:'≤',eq:'=' };
+  const toast = document.createElement('div');
+  toast.className = 'alert-badge';
+  toast.innerHTML = `<strong>🔔 ${rule.name}</strong><br><span style="font-size:0.75rem;opacity:.85">${rule.col} ${opLabels[rule.op]} ${formatNum(rule.threshold)}: ${rule.triggeredRows} rows matched</span><br><button onclick="this.parentElement.remove()" style="margin-top:6px;font-size:0.7rem;background:rgba(255,255,255,.2);border:none;color:#fff;padding:2px 8px;border-radius:4px;cursor:pointer">Dismiss</button>`;
+  document.getElementById('alertToastContainer').appendChild(toast);
+  setTimeout(() => { if (toast.parentElement) toast.remove(); }, 8000);
+}
+
+function updateAlertCount() {
+  const count = alertRules.filter(r => r.triggered).length;
+  const badge = document.getElementById('alertCountBadge');
+  if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); }
+  else { badge.classList.add('hidden'); }
+}
+
+function startAlertMonitor() {
+  if (alertCheckInterval) clearInterval(alertCheckInterval);
+  alertCheckInterval = setInterval(checkAlerts, 30000);
+  checkAlerts();
+}
+
+/* ═══════════════════════════════════
+   3. KEY INFLUENCERS
+═══════════════════════════════════ */
+function populateInfluencerTarget() {
+  const headers = Object.keys(currentData[0] || {});
+  const numCols = headers.filter(h => currentData.slice(0,10).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const sel = document.getElementById('influencerTarget');
+  sel.innerHTML = '<option value="">Select target column</option>';
+  numCols.forEach(h => { const o = document.createElement('option'); o.value=h; o.textContent=h; sel.appendChild(o); });
+}
+
+document.getElementById('runInfluencersBtn').addEventListener('click', runKeyInfluencers);
+
+function runKeyInfluencers() {
+  const target = document.getElementById('influencerTarget').value;
+  if (!target || !currentData.length) { alert('Select a target column first.'); return; }
+  const headers = Object.keys(currentData[0]).filter(h => h !== target);
+  const targetVals = currentData.map(r => parseFloat(r[target])).filter(v => !isNaN(v));
+  if (targetVals.length < 3) { alert('Not enough numeric data in target column.'); return; }
+
+  const targetMean = targetVals.reduce((a,b)=>a+b,0)/targetVals.length;
+
+  // Calculate correlation for numeric cols and ANOVA for categorical
+  const results = [];
+  headers.forEach(col => {
+    const vals = currentData.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+    const isNum = vals.length > currentData.length * 0.5;
+    if (isNum) {
+      // Pearson correlation
+      const n = Math.min(vals.length, targetVals.length, currentData.length);
+      const xArr = currentData.slice(0,n).map(r => parseFloat(r[col])).filter(v=>!isNaN(v));
+      const yArr = currentData.slice(0,n).map(r => parseFloat(r[target])).filter(v=>!isNaN(v));
+      const len = Math.min(xArr.length, yArr.length);
+      if (len < 3) return;
+      const xMean = xArr.slice(0,len).reduce((a,b)=>a+b,0)/len;
+      const yMean = yArr.slice(0,len).reduce((a,b)=>a+b,0)/len;
+      let num=0, dx=0, dy=0;
+      for (let i=0;i<len;i++) { num += (xArr[i]-xMean)*(yArr[i]-yMean); dx += (xArr[i]-xMean)**2; dy += (yArr[i]-yMean)**2; }
+      const corr = (dx*dy > 0) ? num/Math.sqrt(dx*dy) : 0;
+      results.push({ col, type: 'numeric', score: Math.abs(corr), corr, isPositive: corr >= 0 });
+    } else {
+      // Group mean difference for categorical
+      const groups = {};
+      currentData.forEach(r => { const k = r[col]||'N/A'; const v = parseFloat(r[target]); if (!isNaN(v)) { if(!groups[k]) groups[k]=[]; groups[k].push(v); } });
+      const groupMeans = Object.entries(groups).map(([k,arr]) => ({ k, mean: arr.reduce((a,b)=>a+b,0)/arr.length, n: arr.length }));
+      if (groupMeans.length < 2) return;
+      const maxDiff = Math.max(...groupMeans.map(g => Math.abs(g.mean - targetMean)));
+      const normScore = Math.min(maxDiff / (targetMean + 0.001), 1);
+      const topGroup = groupMeans.sort((a,b)=>b.mean-a.mean)[0];
+      results.push({ col, type: 'categorical', score: normScore, topGroup, isPositive: topGroup.mean >= targetMean });
+    }
+  });
+
+  results.sort((a,b) => b.score - a.score);
+  const top = results.slice(0, 8);
+  const container = document.getElementById('influencersResult');
+
+  if (!top.length) { container.innerHTML = '<p class="text-gray-500 text-sm">No significant influencers found.</p>'; return; }
+
+  const increasers = top.filter(r => r.isPositive);
+  const decreasers = top.filter(r => !r.isPositive);
+
+  function renderList(items, label, color) {
+    if (!items.length) return '';
+    return `<div>
+      <h5 class="text-sm font-bold mb-3" style="color:${color}">${label}</h5>
+      ${items.map(r => `
+        <div class="influencer-row">
+          <span class="influencer-label" title="${r.col}">${r.col}</span>
+          <div class="influencer-bar-bg">
+            <div class="influencer-bar-fill" style="width:${Math.round(r.score*100)}%;background:${color}80;border:1px solid ${color}60"></div>
+          </div>
+          <span class="influencer-val">${r.type==='numeric' ? (r.corr>=0?'+':'')+r.corr.toFixed(2) : Math.round(r.score*100)+'%'}</span>
+          <span class="influencer-dir">${r.isPositive ? '⬆️' : '⬇️'}</span>
+        </div>`).join('')}
+    </div>`;
+  }
+
+  container.innerHTML = renderList(increasers, '⬆️ Increases ' + target, '#10b981') + renderList(decreasers, '⬇️ Decreases ' + target, '#ef4444');
+  setTimeout(() => {
+    container.querySelectorAll('.influencer-bar-fill').forEach(el => {
+      const w = el.style.width; el.style.width = '0%';
+      setTimeout(() => { el.style.width = w; }, 50);
+    });
+  }, 50);
+}
+
+/* ═══════════════════════════════════
+   4. DATA PIPELINE BUILDER
+═══════════════════════════════════ */
+document.getElementById('runPipelineBtn').addEventListener('click', runDataPipeline);
+
+function runDataPipeline() {
+  const input = document.getElementById('pipelineInput').value.trim().toLowerCase();
+  if (!input) { alert('Describe a transformation first.'); return; }
+  if (!currentData.length) { alert('Upload data first.'); return; }
+
+  const steps = [];
+  const log = [];
+  let data = [...rawData];
+
+  // Parse NL into pipeline steps
+  if (/remove empty|drop null|remove null|drop empty/.test(input)) {
+    steps.push({ icon: '🧹', label: 'Remove empty rows', tag: 'Clean' });
+    const before = data.length;
+    data = data.filter(row => Object.values(row).some(v => v !== '' && v !== null));
+    log.push(`✓ Removed ${before - data.length} empty rows. ${data.length} remaining.`);
+  }
+
+  if (/remove duplicate|drop duplicate|deduplicate/.test(input)) {
+    steps.push({ icon: '🔁', label: 'Remove duplicate rows', tag: 'Deduplicate' });
+    const before = data.length;
+    const seen = new Set();
+    data = data.filter(row => { const k = JSON.stringify(row); if (seen.has(k)) return false; seen.add(k); return true; });
+    log.push(`✓ Removed ${before - data.length} duplicates. ${data.length} remaining.`);
+  }
+
+  if (/normalize|standardize/.test(input)) {
+    const headers = Object.keys(data[0] || {});
+    const numCols = headers.filter(h => data.slice(0,10).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+    if (numCols.length) {
+      steps.push({ icon: '⚖️', label: `Normalize ${numCols.slice(0,3).join(', ')}`, tag: 'Transform' });
+      numCols.forEach(col => {
+        const vals = data.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+        const min = Math.min(...vals), max = Math.max(...vals);
+        if (max > min) data = data.map(r => { const v = parseFloat(r[col]); return { ...r, [col]: isNaN(v) ? r[col] : ((v-min)/(max-min)).toFixed(4) }; });
+      });
+      log.push(`✓ Normalized ${numCols.length} numeric column(s) to [0, 1] range.`);
+    }
+  }
+
+  const filterMatch = input.match(/filter where (.+?)(?:,|$)/);
+  if (filterMatch) {
+    const filterExpr = filterMatch[1].trim();
+    const headers = Object.keys(data[0] || {});
+    const colMatch = headers.find(h => filterExpr.includes(h.toLowerCase()));
+    const numMatch = filterExpr.match(/([><=!]+)\s*([\d.]+)/);
+    if (colMatch && numMatch) {
+      const [, op, val] = numMatch; const threshold = parseFloat(val);
+      steps.push({ icon: '🔽', label: `Filter: ${colMatch} ${op} ${val}`, tag: 'Filter' });
+      const before = data.length;
+      const ops = { '>': (a,b)=>a>b, '<': (a,b)=>a<b, '>=': (a,b)=>a>=b, '<=': (a,b)=>a<=b, '=': (a,b)=>a===b, '==': (a,b)=>a===b };
+      data = data.filter(r => { const v = parseFloat(r[colMatch]); return !isNaN(v) && (ops[op] || (()=>true))(v, threshold); });
+      log.push(`✓ Filtered ${colMatch} ${op} ${val}: ${data.length} rows kept (${before - data.length} removed).`);
+    }
+  }
+
+  const renameMatch = input.match(/rename ['"']?(\w+)['"']? to ['"']?(\w+)['"']?/);
+  if (renameMatch) {
+    const [, from, to] = renameMatch;
+    const headers = Object.keys(data[0] || {});
+    const srcCol = headers.find(h => h.toLowerCase() === from.toLowerCase());
+    if (srcCol) {
+      steps.push({ icon: '✏️', label: `Rename: ${srcCol} → ${to}`, tag: 'Rename' });
+      data = data.map(r => { const row = { ...r }; row[to] = row[srcCol]; delete row[srcCol]; return row; });
+      log.push(`✓ Renamed column "${srcCol}" to "${to}".`);
+    }
+  }
+
+  if (/sort by|order by/.test(input)) {
+    const headers = Object.keys(data[0] || {});
+    const sortColMatch = headers.find(h => input.includes(h.toLowerCase()));
+    if (sortColMatch) {
+      const desc = /desc/.test(input);
+      steps.push({ icon: '🔀', label: `Sort by ${sortColMatch} ${desc?'↓':'↑'}`, tag: 'Sort' });
+      data.sort((a,b) => { const av = parseFloat(a[sortColMatch]), bv = parseFloat(b[sortColMatch]); if (!isNaN(av)&&!isNaN(bv)) return desc ? bv-av : av-bv; return String(a[sortColMatch]).localeCompare(String(b[sortColMatch])) * (desc?-1:1); });
+      log.push(`✓ Sorted by "${sortColMatch}" ${desc?'descending':'ascending'}.`);
+    }
+  }
+
+  if (steps.length === 0) {
+    steps.push({ icon: '❓', label: 'No matching transformation found', tag: 'Info' });
+    log.push('⚠️ Could not parse transformation. Try: "remove empty rows", "normalize price", "filter where qty > 0", "sort by sales desc".');
+  } else {
+    currentData = data;
+    displayDataPreview(currentData);
+    buildKPICards();
+    generateAIInsights();
+    botStatus.textContent = `Pipeline applied · ${currentData.length} rows`;
+    log.push(`\n✅ Pipeline complete. ${currentData.length} rows in output.`);
+  }
+
+  // Render steps
+  const stepsDiv = document.getElementById('pipelineSteps');
+  stepsDiv.innerHTML = steps.map((s, i) => `
+    ${i > 0 ? '<div class="pipeline-connector"></div>' : ''}
+    <div class="pipeline-step">
+      <span class="ps-icon">${s.icon}</span>
+      <span class="ps-label">${s.label}</span>
+      <span class="ps-tag">${s.tag}</span>
+    </div>`).join('');
+
+  // Log
+  const logDiv = document.getElementById('pipelineLog');
+  logDiv.classList.remove('hidden');
+  document.getElementById('pipelineLogContent').innerHTML = log.map(l => `<div>${l}</div>`).join('');
+  addChatMessage('bot', `🔄 **Pipeline executed** — ${steps.length} step(s) applied. ${currentData.length} rows remain.\n\n` + log.slice(0,-1).join('\n'));
+}
+
+/* ═══════════════════════════════════
+   5. REPORT BUILDER
+═══════════════════════════════════ */
+window.selectTemplate = (el) => {
+  document.querySelectorAll('.report-template').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedTemplate = el.dataset.template;
+};
+
+document.getElementById('generateReportBtn').addEventListener('click', generateReport);
+
+function generateReport() {
+  if (!currentData.length) { alert('Upload data first.'); return; }
+  const title = document.getElementById('reportTitle').value || 'Data Report';
+  const subtitle = document.getElementById('reportSubtitle').value;
+  const maxRows = parseInt(document.getElementById('reportMaxRows').value) || 50;
+  const inclKpi = document.getElementById('rptKpi').checked;
+  const inclInsights = document.getElementById('rptInsights').checked;
+  const inclTable = document.getElementById('rptTable').checked;
+  const inclProfile = document.getElementById('rptProfile').checked;
+
+  const headers = Object.keys(currentData[0]);
+  const numCols = headers.filter(h => currentData.slice(0,10).some(r => !isNaN(parseFloat(r[h])) && r[h] !== ''));
+  const now = new Date().toLocaleString();
+
+  let kpiHtml = '';
+  if (inclKpi) {
+    const kpis = numCols.slice(0,4).map(col => {
+      const vals = currentData.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v));
+      return `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px;text-align:center;flex:1;min-width:120px"><div style="font-size:11px;color:#64748b;margin-bottom:4px">${col}</div><div style="font-size:22px;font-weight:700;color:#1e293b">${formatNum(vals.reduce((a,b)=>a+b,0))}</div><div style="font-size:10px;color:#94a3b8">Sum</div></div>`;
+    }).join('');
+    kpiHtml = `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">${kpis}</div>`;
+  }
+
+  let insightsHtml = '';
+  if (inclInsights) {
+    const insightCards = document.querySelectorAll('.insight-card');
+    insightsHtml = `<div style="margin-bottom:24px"><h3 style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px;border-left:3px solid #6366f1;padding-left:10px">AI Insights</h3>${Array.from(insightCards).slice(0,4).map(c => `<div style="background:#f1f5f9;border-radius:6px;padding:10px;margin-bottom:8px;font-size:12px;color:#334155">${c.innerText}</div>`).join('')}</div>`;
+  }
+
+  let tableHtml = '';
+  if (inclTable) {
+    const rows = currentData.slice(0, maxRows);
+    tableHtml = `<div style="margin-bottom:24px"><h3 style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px;border-left:3px solid #10b981;padding-left:10px">Data Table (${rows.length} rows)</h3><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>${headers.map(h=>`<th style="background:#1e293b;color:#f1f5f9;padding:8px;text-align:left;border:1px solid #334155">${h}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr style="background:${i%2===0?'#f8fafc':'#fff'}">${headers.map(h=>`<td style="padding:6px 8px;border:1px solid #e2e8f0;color:#334155">${String(r[h]||'').substring(0,50)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  }
+
+  let profileHtml = '';
+  if (inclProfile) {
+    const profRows = headers.map(col => {
+      const vals = currentData.map(r=>r[col]);
+      const empty = vals.filter(v=>v===''||v===null).length;
+      const uniq = new Set(vals).size;
+      const nums = vals.map(v=>parseFloat(v)).filter(v=>!isNaN(v));
+      return `<tr style="background:${headers.indexOf(col)%2===0?'#f8fafc':'#fff'}"><td style="padding:6px 10px;border:1px solid #e2e8f0;color:#334155">${col}</td><td style="padding:6px 10px;border:1px solid #e2e8f0;color:#64748b">${nums.length > currentData.length * 0.5 ? 'Numeric' : 'Text'}</td><td style="padding:6px 10px;border:1px solid #e2e8f0;color:#334155">${(((currentData.length-empty)/currentData.length)*100).toFixed(0)}%</td><td style="padding:6px 10px;border:1px solid #e2e8f0;color:#334155">${uniq}</td></tr>`;
+    }).join('');
+    profileHtml = `<div style="margin-bottom:24px"><h3 style="font-size:14px;font-weight:700;color:#1e293b;margin-bottom:10px;border-left:3px solid #f59e0b;padding-left:10px">Data Profile</h3><table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr><th style="background:#1e293b;color:#f1f5f9;padding:8px;border:1px solid #334155">Column</th><th style="background:#1e293b;color:#f1f5f9;padding:8px;border:1px solid #334155">Type</th><th style="background:#1e293b;color:#f1f5f9;padding:8px;border:1px solid #334155">Completeness</th><th style="background:#1e293b;color:#f1f5f9;padding:8px;border:1px solid #334155">Unique Values</th></tr></thead><tbody>${profRows}</tbody></table></div>`;
+  }
+
+  const reportEl = document.createElement('div');
+  reportEl.innerHTML = `<div style="font-family:Inter,Arial,sans-serif;color:#1e293b;padding:24px">
+    <div style="border-bottom:3px solid #6366f1;padding-bottom:16px;margin-bottom:20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 4px">${title}</h1>
+          ${subtitle ? `<p style="font-size:13px;color:#64748b;margin:0">${subtitle}</p>` : ''}
+        </div>
+        <div style="text-align:right">
+          <p style="font-size:11px;color:#94a3b8;margin:0">Generated by VizChat</p>
+          <p style="font-size:11px;color:#94a3b8;margin:2px 0 0">${now}</p>
+          <p style="font-size:11px;color:#94a3b8;margin:2px 0 0">${uploadedFile?.name || ''}</p>
+        </div>
+      </div>
+    </div>
+    ${kpiHtml}${insightsHtml}${tableHtml}${profileHtml}
+    <div style="margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center">VizChat · Data-Driven Chatbot Builder · ${now}</div>
+  </div>`;
+
+  html2pdf().set({
+    margin: 10,
+    filename: `${title.replace(/\s+/g,'-')}-${Date.now()}.pdf`,
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  }).from(reportEl).save();
+  botStatus.textContent = 'PDF Report generated ✓';
+}
+
+/* ═══════════════════════════════════
+   6. EMBED GENERATOR
+═══════════════════════════════════ */
+document.getElementById('generateEmbedBtn').addEventListener('click', generateEmbed);
+
+function generateEmbed() {
+  const type = document.getElementById('embedType').value;
+  const access = document.getElementById('embedAccess').value;
+  const width = document.getElementById('embedWidth').value || '100%';
+  const showChat = document.getElementById('embedShowChat').checked;
+  const showCharts = document.getElementById('embedShowCharts').checked;
+  const showKpi = document.getElementById('embedShowKpi').checked;
+  const darkMode = document.getElementById('embedDarkMode').checked;
+  const botName = uploadedFile?.name?.replace(/\.[^/.]+$/, '') || 'DataBot';
+  const token = btoa(`${botName}:${access}:${Date.now()}`).substring(0,24);
+  const baseUrl = `${window.location.origin}/embed/${token}`;
+  const params = new URLSearchParams({ chat: showChat, charts: showCharts, kpi: showKpi, dark: darkMode, access }).toString();
+  let code = '';
+
+  if (type === 'iframe') {
+    code = `<!-- VizChat Embed: ${botName} -->\n<iframe\n  src="${baseUrl}?${params}"\n  width="${width}"\n  height="600"\n  frameborder="0"\n  allow="clipboard-write"\n  style="border-radius:12px;border:1px solid #e2e8f0"\n  title="${botName} - VizChat"\n></iframe>`;
+  } else if (type === 'js') {
+    code = `<!-- VizChat SDK -->\n<div id="vizchat-${token}"></div>\n<script src="${window.location.origin}/sdk/vizchat.js"><\/script>\n<script>\n  VizChat.init({\n    container: '#vizchat-${token}',\n    token: '${token}',\n    config: {\n      chat: ${showChat},\n      charts: ${showCharts},\n      kpi: ${showKpi},\n      dark: ${darkMode},\n      access: '${access}'\n    }\n  });\n<\/script>`;
+  } else if (type === 'react') {
+    code = `import { VizChatEmbed } from '@vizchat/react';\n\nexport function MyDashboard() {\n  return (\n    <VizChatEmbed\n      token="${token}"\n      width="${width}"\n      showChat={${showChat}}\n      showCharts={${showCharts}}\n      showKpi={${showKpi}}\n      darkMode={${darkMode}}\n      access="${access}"\n    />\n  );\n}`;
+  } else {
+    code = `${baseUrl}?${params}\n\nShare this link to give others ${access === 'view' ? 'view-only' : access === 'interact' ? 'interactive' : 'full'} access to your dashboard.`;
+  }
+
+  document.getElementById('embedCodeBox').textContent = code;
+  document.getElementById('embedOutput').classList.remove('hidden');
+}
+
+document.getElementById('copyEmbedBtn').addEventListener('click', () => {
+  const code = document.getElementById('embedCodeBox').textContent;
+  navigator.clipboard.writeText(code).then(() => {
+    const btn = document.getElementById('copyEmbedBtn');
+    btn.textContent = '✅ Copied!'; btn.style.background = 'rgba(16,185,129,.2)';
+    setTimeout(() => { btn.textContent = '📋 Copy'; btn.style.background = ''; }, 2000);
+  });
+});
+
+/* ═══════════════════════════════════
+   7. ROW-LEVEL SECURITY
+═══════════════════════════════════ */
+function populateRLSColumns() {
+  const headers = Object.keys(currentData[0] || {});
+  ['rlsColumn'].forEach(id => {
+    const sel = document.getElementById(id);
+    sel.innerHTML = '<option value="">Select column</option>';
+    headers.forEach(h => { const o = document.createElement('option'); o.value=h; o.textContent=h; sel.appendChild(o); });
+  });
+}
+
+document.getElementById('saveRoleBtn').addEventListener('click', () => {
+  const name = document.getElementById('rlsRoleName').value.trim();
+  const col = document.getElementById('rlsColumn').value;
+  const vals = document.getElementById('rlsValues').value.split(',').map(v=>v.trim()).filter(Boolean);
+  if (!name || !col || !vals.length) { alert('Fill in all role fields.'); return; }
+  rlsRoles.push({ id: Date.now(), name, col, vals });
+  document.getElementById('rlsRoleName').value = '';
+  document.getElementById('rlsValues').value = '';
+  renderRolesList();
+  updateRolePreviewSelect();
+});
+
+function renderRolesList() {
+  const container = document.getElementById('rolesList');
+  if (!rlsRoles.length) { container.innerHTML = '<p class="text-gray-500 text-xs">No roles defined yet.</p>'; return; }
+  container.innerHTML = rlsRoles.map(role => `
+    <div class="flex items-center justify-between bg-gray-900/70 rounded-lg px-4 py-3 border border-gray-700">
+      <div>
+        <p class="text-sm font-semibold text-white">🔐 ${role.name}</p>
+        <p class="text-xs text-gray-400 mt-0.5">${role.col}: ${role.vals.join(', ')}</p>
+      </div>
+      <button onclick="deleteRole(${role.id})" class="text-xs text-red-400 hover:text-red-300 px-2 py-1 rounded hover:bg-red-900/20 transition">✕</button>
+    </div>`).join('');
+}
+
+window.deleteRole = (id) => { rlsRoles = rlsRoles.filter(r => r.id !== id); renderRolesList(); updateRolePreviewSelect(); };
+
+function updateRolePreviewSelect() {
+  const sel = document.getElementById('previewRoleSelect');
+  sel.innerHTML = '<option value="">All data (Admin)</option>';
+  rlsRoles.forEach(r => { const o = document.createElement('option'); o.value=r.id; o.textContent=r.name; sel.appendChild(o); });
+}
+
+document.getElementById('applyRolePreviewBtn').addEventListener('click', () => {
+  const roleId = parseInt(document.getElementById('previewRoleSelect').value);
+  if (!roleId) { document.getElementById('clearRolePreviewBtn').click(); return; }
+  const role = rlsRoles.find(r => r.id === roleId);
+  if (!role) return;
+  activeRoleFilter = role;
+  currentData = rawData.filter(row => role.vals.includes(String(row[role.col])));
+  displayDataPreview(currentData);
+  buildKPICards();
+  botStatus.textContent = `Viewing as: ${role.name} · ${currentData.length} rows visible`;
+  addChatMessage('bot', `🔐 **Role Preview**: Viewing as *${role.name}* — only ${role.col} in [${role.vals.join(', ')}]. ${currentData.length} rows visible.`);
+});
+
+document.getElementById('clearRolePreviewBtn').addEventListener('click', () => {
+  activeRoleFilter = null; currentData = [...rawData];
+  displayDataPreview(currentData); buildKPICards();
+  botStatus.textContent = `Admin view · ${currentData.length} rows`;
+});
+
+/* ═══════════════════════════════════
+   8. DEPLOYMENT VERSIONS
+═══════════════════════════════════ */
+document.getElementById('saveVersionBtn').addEventListener('click', () => {
+  if (!currentData.length) { alert('Upload data first.'); return; }
+  const tag = prompt('Version tag (e.g. v1.0, sprint-3):') || `v${botVersions.length + 1}.0`;
+  const version = {
+    id: Date.now(), tag, rows: currentData.length,
+    cols: Object.keys(currentData[0] || {}).length,
+    file: uploadedFile?.name || 'unknown',
+    timestamp: new Date().toLocaleString(),
+    env: 'development', snapshot: currentData.slice(0, 100)
+  };
+  botVersions.unshift(version);
+  renderVersionsList();
+  document.getElementById('devStatus').textContent = `● ${tag} saved`;
+  botStatus.textContent = `Version ${tag} saved`;
+});
+
+document.getElementById('promoteToStagingBtn').addEventListener('click', () => {
+  if (!botVersions.length) { alert('Save a version first.'); return; }
+  const latest = botVersions[0];
+  document.getElementById('stagingStatus').textContent = `● ${latest.tag}`;
+  document.getElementById('stagingStatus').style.color = '#facc15';
+  showToast(`🧪 Version ${latest.tag} promoted to Staging`);
+});
+
+document.getElementById('promoteToProductionBtn').addEventListener('click', () => {
+  if (!botVersions.length) { alert('Save a version first.'); return; }
+  const latest = botVersions[0];
+  document.getElementById('productionStatus').textContent = `● ${latest.tag}`;
+  document.getElementById('productionStatus').style.color = '#4ade80';
+  showToast(`🚀 Version ${latest.tag} is now LIVE in Production`);
+});
+
+function renderVersionsList() {
+  const container = document.getElementById('versionsList');
+  if (!botVersions.length) { container.innerHTML = '<p class="text-gray-500 text-xs">No versions saved yet.</p>'; return; }
+  container.innerHTML = botVersions.slice(0, 8).map(v => `
+    <div class="flex items-center justify-between bg-gray-900/70 rounded-lg px-4 py-3 border border-gray-700">
+      <div class="flex items-center gap-3">
+        <span class="text-lg">📦</span>
+        <div>
+          <p class="text-sm font-semibold text-white">${v.tag}</p>
+          <p class="text-xs text-gray-400">${v.file} · ${v.rows} rows · ${v.timestamp}</p>
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <span class="px-2 py-0.5 bg-blue-900/40 border border-blue-700 text-blue-300 rounded text-xs">${v.env}</span>
+      </div>
+    </div>`).join('');
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'alert-badge';
+  t.style.background = 'rgba(16,185,129,0.95)';
+  t.style.borderColor = 'rgba(16,185,129,0.6)';
+  t.style.boxShadow = '0 8px 24px rgba(16,185,129,0.3)';
+  t.innerHTML = msg;
+  document.getElementById('alertToastContainer').appendChild(t);
+  setTimeout(() => { if (t.parentElement) t.remove(); }, 4000);
+}
+
+/* ═══════════════════════════════════
+   SLICERS
+═══════════════════════════════════ */
+function buildSlicers() {
+  const headers = Object.keys(currentData[0]);
+  const catCols = headers.filter(h => { const u = new Set(currentData.map(r=>r[h])); return u.size<=30 && u.size>1; }).slice(0,5);
+  const container = document.getElementById('slicerControls');
+  container.innerHTML = ''; slicerState = {};
+  catCols.forEach(col => {
+    slicerState[col] = new Set();
+    const uniq = [...new Set(currentData.map(r=>r[col]))].filter(v=>v!=='').sort();
+    const wrap = document.createElement('div');
+    wrap.innerHTML = `<div class="text-xs text-gray-400 font-semibold mb-1.5">${col}</div>`;
+    const chips = document.createElement('div'); chips.className = 'flex flex-wrap gap-1';
+    uniq.forEach(val => {
+      const chip = document.createElement('span'); chip.className = 'slicer-chip';
+      chip.textContent = val; chip.dataset.col = col; chip.dataset.val = val;
+      chip.addEventListener('click', () => {
+        chip.classList.toggle('active');
+        if (slicerState[col].has(val)) slicerState[col].delete(val); else slicerState[col].add(val);
+        applySlicers();
+      });
+      chips.appendChild(chip);
+    });
+    wrap.appendChild(chips); container.appendChild(wrap);
+  });
+  if (!catCols.length) container.innerHTML = '<p class="text-xs text-gray-500">No categorical columns detected.</p>';
+}
+
+function applySlicers() {
+  currentData = rawData.filter(row => Object.entries(slicerState).every(([col,sel]) => sel.size===0 || sel.has(row[col])));
+  if (activeRoleFilter) currentData = currentData.filter(row => activeRoleFilter.vals.includes(String(row[activeRoleFilter.col])));
+  displayDataPreview(currentData); buildKPICards(); updateFilterBadge();
+  botStatus.textContent = `Filtered: ${currentData.length} / ${rawData.length} rows`;
+  checkAlerts();
+}
+
+function updateFilterBadge() {
+  const badge = document.getElementById('activeFilterBadge'), chipsDiv = document.getElementById('filterChips');
+  const active = Object.entries(slicerState).filter(([,s])=>s.size>0);
+  if (!active.length) { badge.classList.add('hidden'); return; }
+  badge.classList.remove('hidden'); chipsDiv.innerHTML = '';
+  active.forEach(([col,sel]) => {
+    sel.forEach(val => {
+      const chip = document.createElement('span'); chip.className = 'slicer-chip active';
+      chip.innerHTML = `${col}: ${val} <span class="remove" data-col="${col}" data-val="${val}">✕</span>`;
+      chip.querySelector('.remove').addEventListener('click', e => {
+        e.stopPropagation(); slicerState[col].delete(val);
+        document.querySelector(`.slicer-chip[data-col="${col}"][data-val="${val}"]`)?.classList.remove('active');
+        applySlicers();
+      });
+      chipsDiv.appendChild(chip);
+    });
+  });
+}
+
+document.getElementById('clearAllFilters').addEventListener('click', () => {
+  Object.keys(slicerState).forEach(k=>slicerState[k].clear());
+  document.querySelectorAll('.slicer-chip').forEach(c=>c.classList.remove('active'));
+  applySlicers();
+});
+document.getElementById('resetSlicers').addEventListener('click', () => document.getElementById('clearAllFilters').click());
+
+/* ═══════════════════════════════════
+   Q&A CHIPS
+═══════════════════════════════════ */
+function buildQAChips() {
+  if (!currentData.length) return;
+  const headers = Object.keys(currentData[0]);
+  const numCol = headers.find(h=>currentData.slice(0,20).some(r=>!isNaN(parseFloat(r[h]))&&r[h]!==''));
+  const catCol = headers.find(h=>{ const u=new Set(currentData.map(r=>r[h])); return u.size<=20; });
+  const suggestions = [
+    'How many rows?', 'Show all columns',
+    numCol ? `Total ${numCol}` : null, numCol ? `Average ${numCol}` : null,
+    numCol ? `Max ${numCol}` : null, catCol ? `Count by ${catCol}` : null,
+    'Top 5 records', 'Show summary',
+    numCol ? `Show bar chart of ${numCol}` : null,
+    catCol && numCol ? `Show pie chart of ${catCol}` : null,
+  ].filter(Boolean);
+  const container = document.getElementById('qaChips');
+  container.innerHTML = '';
+  suggestions.forEach(s => {
+    const chip = document.createElement('span'); chip.className = 'qa-chip'; chip.textContent = s;
+    chip.addEventListener('click', () => { chatInput.value = s; chatForm.dispatchEvent(new Event('submit')); });
+    container.appendChild(chip);
+  });
+  container.classList.remove('hidden');
+}
+
+/* ═══════════════════════════════════
+   COLUMN SELECTOR
+═══════════════════════════════════ */
+function populateColumnSelector() {
+  const headers = Object.keys(currentData[0]);
+  ['columnSelector','chart2ndColumn','sortColumnSelect'].forEach(id => {
+    const sel = document.getElementById(id), placeholder = sel.options[0].textContent;
+    sel.innerHTML = `<option value="">${placeholder}</option>`;
+    headers.forEach(h => { const o=document.createElement('option'); o.value=h; o.textContent=h; sel.appendChild(o); });
+  });
+}
+
+/* ═══════════════════════════════════
+   NL → CHART (Enhanced Chat)
+═══════════════════════════════════ */
+function detectChartIntent(query) {
+  const lq = query.toLowerCase();
+  if (/bar chart|bar graph|show bar/.test(lq)) return 'bar';
+  if (/pie chart|pie graph|show pie/.test(lq)) return 'pie';
+  if (/line chart|line graph|trend/.test(lq)) return 'line';
+  if (/area chart|area graph/.test(lq)) return 'area';
+  if (/scatter|correlation between/.test(lq)) return 'scatter';
+  return null;
+}
+
+function searchData(query) {
+  if (!currentData.length) return [];
+  const lq = query.toLowerCase().trim(), words = lq.split(/\s+/);
+  return currentData.map((row,idx) => {
+    let score = 0; const rowStr = JSON.stringify(row).toLowerCase();
+    words.forEach(w => { if (w.length>2&&rowStr.includes(w)) score+=10; });
+    Object.values(row).forEach(v => { if (String(v).toLowerCase().includes(lq)) score+=15; });
+    return { ...row, _score: score, _idx: idx };
+  }).filter(r=>r._score>0).sort((a,b)=>b._score-a._score);
+}
+
+function getFieldValue(row, names) {
+  for (const n of names) { const k=Object.keys(row).find(k=>k.toLowerCase()===n.toLowerCase()); if(k&&row[k]!==undefined&&row[k]!=='') return row[k]; }
+  return '';
+}
+function getProductName(row) {
+  const n=getFieldValue(row,['name','product','item','title','description','item_name','product_name']);
+  if (n) return n;
+  for (const k of Object.keys(row)) { const v=String(row[k]); if (isNaN(v)&&v.trim()) return v; }
+  return 'Record';
+}
+
+function generateResponse(query, results) {
+  const lq = query.toLowerCase();
+  const headers = currentData.length ? Object.keys(currentData[0]) : [];
+
+  if (/how many|count|number of|total rows/.test(lq))
+    return `📊 **${currentData.length}** rows in current view (${rawData.length} total).`;
+  if (/columns|fields|attributes|schema|headers/.test(lq))
+    return `📋 **${headers.length} columns:**\n${headers.map((h,i)=>`${i+1}. ${h}`).join('\n')}`;
+  if (/summary|overview|describe/.test(lq)) {
+    const numCols = headers.filter(h=>currentData.slice(0,10).some(r=>!isNaN(parseFloat(r[h]))&&r[h]!==''));
+    return `📈 **Dataset Overview**\n• Rows: ${currentData.length}\n• Columns: ${headers.length}\n• Numeric: ${numCols.join(', ')||'none'}\n• Text: ${headers.filter(h=>!numCols.includes(h)).join(', ')||'none'}`;
+  }
+  if (/total|sum/.test(lq)) {
+    const colMatch = headers.find(h=>lq.includes(h.toLowerCase()));
+    if (colMatch) { const vals=currentData.map(r=>parseFloat(r[colMatch])).filter(v=>!isNaN(v)); return `💰 Total **${colMatch}**: ${formatNum(vals.reduce((a,b)=>a+b,0))} (${vals.length} records)`; }
+  }
+  if (/average|avg|mean/.test(lq)) {
+    const colMatch = headers.find(h=>lq.includes(h.toLowerCase()));
+    if (colMatch) { const vals=currentData.map(r=>parseFloat(r[colMatch])).filter(v=>!isNaN(v)); return `📊 Average **${colMatch}**: ${formatNum(vals.reduce((a,b)=>a+b,0)/vals.length)}`; }
+  }
+  if (/max|highest|largest/.test(lq)) {
+    const colMatch = headers.find(h=>lq.includes(h.toLowerCase()));
+    if (colMatch) { const vals=currentData.map(r=>parseFloat(r[colMatch])).filter(v=>!isNaN(v)); const maxV=Math.max(...vals); return `📈 Max **${colMatch}**: ${formatNum(maxV)}\nRecord: ${getProductName(currentData.find(r=>parseFloat(r[colMatch])===maxV))}`; }
+  }
+  if (/min|lowest|smallest/.test(lq)) {
+    const colMatch = headers.find(h=>lq.includes(h.toLowerCase()));
+    if (colMatch) { const vals=currentData.map(r=>parseFloat(r[colMatch])).filter(v=>!isNaN(v)); const minV=Math.min(...vals); return `📉 Min **${colMatch}**: ${formatNum(minV)}\nRecord: ${getProductName(currentData.find(r=>parseFloat(r[colMatch])===minV))}`; }
+  }
+  if (/count by|group by|breakdown/.test(lq)) {
+    const colMatch = headers.find(h=>lq.includes(h.toLowerCase()));
+    if (colMatch) { const freq={}; currentData.forEach(r=>{const v=r[colMatch]||'N/A';freq[v]=(freq[v]||0)+1;}); return `📊 **${colMatch}** breakdown:\n`+Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>`• ${k}: ${v}`).join('\n'); }
+  }
+  const topMatch = lq.match(/top\s*(\d+)/);
+  if (topMatch) {
+    const n=parseInt(topMatch[1]), numCol=headers.find(h=>currentData.slice(0,20).some(r=>!isNaN(parseFloat(r[h]))&&r[h]!==''));
+    if (numCol) { const sorted=[...currentData].sort((a,b)=>parseFloat(b[numCol]||0)-parseFloat(a[numCol]||0)).slice(0,n); return `🏆 Top ${n} by **${numCol}**:\n`+sorted.map((r,i)=>`${i+1}. ${getProductName(r)} — ${formatNum(parseFloat(r[numCol]))}`).join('\n'); }
+  }
+  if (!results.length) return `❌ No results found for "${query}". Try the Q&A chips above.`;
+  return `🔍 Found **${results.length}** result(s) for "${query}":\n`+results.slice(0,8).map((r,i)=>{
+    const name=getProductName(r), price=getFieldValue(r,['price','cost','rate','amount']), qty=getFieldValue(r,['quantity','qty','stock']);
+    let line=`${i+1}. ${name}`; if(price) line+=` — ₹${price}`; if(qty) line+=` (qty: ${qty})`; return line;
+  }).join('\n');
+}
+
+/* ═══════════════════════════════════
+   CHAT — NL→CHART AUTO-TRIGGER
+═══════════════════════════════════ */
+function addChatMessage(sender, message, chartSuggestion = null) {
+  const ph = chatMessages.querySelector('.text-center'); if(ph) ph.remove();
+  const div = document.createElement('div');
+  div.className = `flex ${sender==='user'?'justify-end':'justify-start'}`;
+  const bubble = document.createElement('div');
+  bubble.className = sender==='user'
+    ? 'bg-sky-600 text-white rounded-xl rounded-tr-none px-4 py-2.5 max-w-xs text-sm break-words'
+    : 'bg-gray-700 text-gray-100 rounded-xl rounded-tl-none px-4 py-2.5 max-w-sm text-sm break-words';
+  bubble.innerHTML = `<p class="whitespace-pre-wrap leading-relaxed">${message.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>')}</p>`;
+  if (chartSuggestion) {
+    const sug = document.createElement('div');
+    sug.className = 'nl-chart-suggestion';
+    sug.innerHTML = `📊 Click to generate: <strong>${chartSuggestion.label}</strong>`;
+    sug.addEventListener('click', chartSuggestion.action);
+    bubble.appendChild(sug);
+  }
+  div.appendChild(bubble);
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+chatForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const query = chatInput.value.trim(); if (!query) return;
+  addChatMessage('user', query); chatInput.value = '';
+  const typing = document.createElement('div');
+  typing.className = 'flex justify-start';
+  typing.innerHTML = '<div class="bg-gray-700 text-gray-400 rounded-xl px-4 py-2.5 text-sm">⏳ Thinking…</div>';
+  chatMessages.appendChild(typing); chatMessages.scrollTop = chatMessages.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    const chartType = detectChartIntent(query);
+    if (chartType && currentData.length) {
+      const headers = Object.keys(currentData[0]);
+      const numCol = headers.find(h=>currentData.slice(0,20).some(r=>!isNaN(parseFloat(r[h]))&&r[h]!==''));
+      const catCol = headers.find(h=>{const u=new Set(currentData.map(r=>r[h]));return u.size<=20;});
+      const col = headers.find(h=>query.toLowerCase().includes(h.toLowerCase())) || numCol || catCol;
+      if (col) {
+        document.getElementById('columnSelector').value = col;
+        const actions = { bar: ()=>document.getElementById('barChartBtn').click(), pie: ()=>document.getElementById('pieChartBtn').click(), line: ()=>document.getElementById('lineChartBtn').click(), area: ()=>document.getElementById('areaChartBtn').click() };
+        if (actions[chartType]) {
+          actions[chartType]();
+          addChatMessage('bot', `📊 Generated **${chartType} chart** for **${col}**! Check the visualization panel below.`);
+          document.getElementById('visualizationSection').scrollIntoView({behavior:'smooth', block:'start'});
+          return;
+        }
+      }
+    }
+    const results = searchData(query);
+    const response = generateResponse(query, results);
+    let chartSuggestion = null;
+    if (results.length > 3 && results.length < currentData.length) {
+      const headers = Object.keys(currentData[0]);
+      const numCol = headers.find(h=>currentData.slice(0,20).some(r=>!isNaN(parseFloat(r[h]))&&r[h]!==''));
+      if (numCol) {
+        chartSuggestion = { label: `Bar chart for matching records by ${numCol}`, action: () => { document.getElementById('columnSelector').value = numCol; document.getElementById('barChartBtn').click(); }};
+      }
+    }
+    addChatMessage('bot', response, chartSuggestion);
+    if (results.length && results.length < currentData.length) {
+      const indices = new Set(results.map(r=>r._idx));
+      document.querySelectorAll('#dataPreview tbody tr').forEach(tr => { tr.classList.toggle('cross-highlight', indices.has(parseInt(tr.dataset.ri))); });
+    }
+  }, 600);
+});
+
+/* ═══════════════════════════════════
+   CHARTS
+═══════════════════════════════════ */
+function getColData(col) { const freq={}; currentData.forEach(r=>{const v=r[col]!==undefined&&r[col]!==''?r[col]:'N/A';freq[v]=(freq[v]||0)+1;}); return freq; }
+function chartColors(n) { const base=['#3b82f6','#ef4444','#10b981','#f59e0b','#8b5cf6','#ec4899','#06b6d4','#84cc16','#f97316','#6366f1']; const bg=[],bd=[]; for(let i=0;i<n;i++){bd.push(base[i%base.length]);bg.push(base[i%base.length]+'cc');} return {bg,bd}; }
+const commonOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#d1d5db',font:{size:11}}}} };
+function mkChart(type,chartData,title,opts={}) {
+  const ctx=document.getElementById('dataChart').getContext('2d');
+  if(currentChart) currentChart.destroy();
+  currentChart=new Chart(ctx,{type,data:chartData,options:{...commonOpts,...opts}});
+  document.getElementById('chartTitle').textContent=title;
+  document.getElementById('chartSection').classList.remove('hidden');
+  ['summarySection','profileSection'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+}
+
+document.getElementById('barChartBtn').addEventListener('click',()=>{
+  const col=document.getElementById('columnSelector').value; if(!col) return alert('Select a column first.');
+  const freq=getColData(col),labels=Object.keys(freq).slice(0,20),vals=labels.map(k=>freq[k]),{bg,bd}=chartColors(labels.length);
+  mkChart('bar',{labels,datasets:[{label:col,data:vals,backgroundColor:bg,borderColor:bd,borderWidth:1}]},`Bar Chart — ${col}`,{onClick:(_,els)=>{if(!els.length)return;drillFilter(col,labels[els[0].index]);},scales:{x:{ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}},y:{ticks:{color:'#9ca3af'},grid:{color:'#1f2937'},beginAtZero:true}}});
+});
+document.getElementById('pieChartBtn').addEventListener('click',()=>{
+  const col=document.getElementById('columnSelector').value; if(!col) return alert('Select a column first.');
+  const freq=getColData(col),labels=Object.keys(freq).slice(0,15),vals=labels.map(k=>freq[k]),{bg,bd}=chartColors(labels.length);
+  mkChart('pie',{labels,datasets:[{data:vals,backgroundColor:bg,borderColor:bd,borderWidth:1}]},`Pie Chart — ${col}`,{onClick:(_,els)=>{if(!els.length)return;drillFilter(col,labels[els[0].index]);},plugins:{...commonOpts.plugins,tooltip:{callbacks:{label:ctx=>{const t=ctx.dataset.data.reduce((a,b)=>a+b,0);return `${ctx.label}: ${ctx.parsed} (${((ctx.parsed/t)*100).toFixed(1)}%)`; }}}}});
+});
+document.getElementById('lineChartBtn').addEventListener('click',()=>{
+  const col=document.getElementById('columnSelector').value; if(!col) return alert('Select a column first.');
+  const vals=currentData.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v)),labels=vals.map((_,i)=>i+1);
+  mkChart('line',{labels,datasets:[{label:col,data:vals,borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,0.1)',pointRadius:vals.length>200?0:2,fill:false,tension:0.3}]},`Line Chart — ${col}`,{scales:{x:{ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}},y:{ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}}}});
+});
+document.getElementById('areaChartBtn').addEventListener('click',()=>{
+  const col=document.getElementById('columnSelector').value; if(!col) return alert('Select a column first.');
+  const vals=currentData.map(r=>parseFloat(r[col])).filter(v=>!isNaN(v)),labels=vals.map((_,i)=>i+1);
+  mkChart('line',{labels,datasets:[{label:col,data:vals,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,0.25)',pointRadius:vals.length>200?0:2,fill:true,tension:0.4}]},`Area Chart — ${col}`,{scales:{x:{ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}},y:{ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}}}});
+});
+document.getElementById('scatterBtn').addEventListener('click',()=>{
+  const col1=document.getElementById('columnSelector').value,col2=document.getElementById('chart2ndColumn').value;
+  if(!col1||!col2) return alert('Select both columns for scatter plot.');
+  const pts=currentData.map(r=>({x:parseFloat(r[col1]),y:parseFloat(r[col2])})).filter(p=>!isNaN(p.x)&&!isNaN(p.y));
+  mkChart('scatter',{datasets:[{label:`${col1} vs ${col2}`,data:pts,backgroundColor:'rgba(236,72,153,0.5)',borderColor:'#ec4899',pointRadius:4}]},`Scatter — ${col1} × ${col2}`,{scales:{x:{title:{display:true,text:col1,color:'#9ca3af'},ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}},y:{title:{display:true,text:col2,color:'#9ca3af'},ticks:{color:'#9ca3af'},grid:{color:'#1f2937'}}}});
+});
+
+function drillFilter(col,val) {
+  if(!slicerState[col]) slicerState[col]=new Set();
+  slicerState[col].add(String(val));
+  document.querySelector(`.slicer-chip[data-col="${col}"][data-val="${val}"]`)?.classList.add('active');
+  applySlicers();
+  addChatMessage('bot',`🔍 Drilled into **${col} = ${val}** — ${currentData.length} rows shown.`);
+}
+
+document.getElementById('downloadChartBtn').addEventListener('click',()=>{const a=document.createElement('a');a.href=document.getElementById('dataChart').toDataURL('image/png');a.download=`chart-${Date.now()}.png`;a.click();});
+document.getElementById('closeChartBtn').addEventListener('click',()=>{document.getElementById('chartSection').classList.add('hidden');if(currentChart){currentChart.destroy();currentChart=null;}});
+
+/* ═══════════════════════════════════
+   SUMMARY STATS
+═══════════════════════════════════ */
+document.getElementById('summaryBtn').addEventListener('click',()=>{
+  const col=document.getElementById('columnSelector').value; if(!col) return alert('Select a column first.');
+  const values=currentData.map(r=>r[col]).filter(v=>v!==null&&v!==''),nums=values.map(v=>parseFloat(v)).filter(v=>!isNaN(v));
+  document.getElementById('summaryTotal').textContent=values.length;
+  document.getElementById('summaryMean').textContent=nums.length?(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2):'N/A';
+  document.getElementById('summaryMax').textContent=nums.length?Math.max(...nums).toFixed(2):'N/A';
+  document.getElementById('summaryMin').textContent=nums.length?Math.min(...nums).toFixed(2):'N/A';
+  const freq={};values.forEach(v=>{freq[v]=(freq[v]||0)+1;});
+  document.getElementById('summaryDetails').textContent=`Column: ${col}\n\n=== STATISTICS ===\nTotal: ${values.length}\nUnique: ${new Set(values).size}\nMean: ${nums.length?(nums.reduce((a,b)=>a+b,0)/nums.length).toFixed(2):'N/A'}\nMedian: ${nums.length?getMedian(nums).toFixed(2):'N/A'}\nStd Dev: ${nums.length?getStdDev(nums).toFixed(2):'N/A'}\nMax: ${nums.length?Math.max(...nums).toFixed(2):'N/A'}\nMin: ${nums.length?Math.min(...nums).toFixed(2):'N/A'}\n\n=== TOP 10 VALUES ===\n${Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10).map((e,i)=>`${i+1}. ${e[0]}: ${e[1]}×`).join('\n')}`;
+  document.getElementById('summarySection').classList.remove('hidden');
+  document.getElementById('chartSection').classList.add('hidden');
+  document.getElementById('profileSection').classList.add('hidden');
+});
+document.getElementById('closeSummaryBtn').addEventListener('click',()=>document.getElementById('summarySection').classList.add('hidden'));
+
+/* ═══════════════════════════════════
+   DATA PROFILE
+═══════════════════════════════════ */
+document.getElementById('profileBtn').addEventListener('click',()=>{
+  if(!currentData.length) return alert('Upload data first.');
+  const headers=Object.keys(currentData[0]),n=currentData.length,cont=document.getElementById('profileContent');
+  cont.innerHTML='';
+  headers.forEach(col=>{
+    const vals=currentData.map(r=>r[col]),empty=vals.filter(v=>v===''||v===null||v===undefined).length,uniq=new Set(vals).size,nums=vals.map(v=>parseFloat(v)).filter(v=>!isNaN(v)),isNum=nums.length>n*0.6,fillPct=Math.round(((n-empty)/n)*100);
+    const card=document.createElement('div'); card.className='bg-gray-900/60 border border-gray-700 rounded-lg p-3';
+    card.innerHTML=`<div class="flex justify-between items-center mb-2"><span class="text-xs font-semibold text-white truncate max-w-[60%]">${col}</span><span class="text-xs px-2 py-0.5 rounded-full ${isNum?'bg-blue-900/60 text-blue-300':'bg-purple-900/60 text-purple-300'}">${isNum?'🔢 numeric':'🔤 text'}</span></div><div class="flex justify-between text-xs text-gray-400 mb-1.5"><span>Fill rate</span><span>${fillPct}% <span class="text-gray-500">(${empty} empty)</span></span></div><div class="profile-bar-bg mb-2"><div class="profile-bar-fill ${fillPct>80?'bg-green-500':fillPct>50?'bg-yellow-500':'bg-red-500'}" style="width:${fillPct}%"></div></div><div class="text-xs text-gray-400"><span>Unique: <strong class="text-gray-200">${uniq}</strong></span>${isNum?`<span class="ml-3">Min: <strong class="text-gray-200">${formatNum(Math.min(...nums))}</strong></span><span class="ml-3">Max: <strong class="text-gray-200">${formatNum(Math.max(...nums))}</strong></span>`:''}</div>`;
+    cont.appendChild(card);
+  });
+  document.getElementById('profileSection').classList.remove('hidden');
+  document.getElementById('summarySection').classList.add('hidden');
+  document.getElementById('chartSection').classList.add('hidden');
+});
+document.getElementById('closeProfileBtn').addEventListener('click',()=>document.getElementById('profileSection').classList.add('hidden'));
+
+/* ═══════════════════════════════════
+   TABLE COMPARISON
+═══════════════════════════════════ */
+document.getElementById('tableComparisonBtn').addEventListener('click',()=>{
+  if(!currentData.length) return alert('Upload data first.');
+  renderComparisonTable(currentData);
+  document.getElementById('tableComparisonSection').classList.remove('hidden');
+  ['chartSection','summarySection','profileSection'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+});
+function renderComparisonTable(data) {
+  const headers=Object.keys(data[0]),hr=document.getElementById('comparisonTableHeader'),tb=document.getElementById('comparisonTableBody');
+  hr.innerHTML=''; tb.innerHTML='';
+  const numCols=headers.filter(h=>data.every(r=>!isNaN(parseFloat(r[h]))&&r[h]!==''));
+  const colRng={}; numCols.forEach(h=>{const vals=data.map(r=>parseFloat(r[h]));colRng[h]={min:Math.min(...vals),max:Math.max(...vals)};});
+  headers.forEach(h=>{const th=document.createElement('th');th.className='px-3 py-2.5 text-left text-gray-300 font-semibold border border-gray-700 bg-gray-800 text-xs whitespace-nowrap cursor-pointer hover:bg-gray-700 select-none';th.innerHTML=`${h} <span class="text-gray-500 text-xs"></span>`;th.addEventListener('click',()=>{if(sortState.col===h)sortState.dir=sortState.dir==='asc'?'desc':'asc';else{sortState.col=h;sortState.dir='asc';}document.getElementById('sortDirBtn').textContent=`${sortState.dir==='asc'?'↑':'↓'} ${sortState.dir.toUpperCase()}`;renderComparisonTable(getSortedData());});hr.appendChild(th);});
+  data.slice(0,1000).forEach(row=>{const tr=document.createElement('tr');tr.className='border-t border-gray-800 hover:bg-gray-700/30 transition';headers.forEach(h=>{const td=document.createElement('td'),raw=row[h]!==undefined?row[h]:'-';let cls='px-3 py-2 text-gray-400 border border-gray-800/50 text-xs';if(numCols.includes(h)){const v=parseFloat(raw),{min,max}=colRng[h],p=max!==min?(v-min)/(max-min):0.5;cls+=p>=0.67?' cf-high':p>=0.33?' cf-mid':' cf-low';}td.className=cls;td.textContent=String(raw).substring(0,100);td.title=String(raw);tr.appendChild(td);});tb.appendChild(tr);});
+  document.getElementById('comparisonRowCount').textContent=`Showing ${Math.min(data.length,1000)} of ${data.length} rows`;
+  document.getElementById('comparisonColCount').textContent=`${headers.length} columns`;
+}
+function getSortedData() { if(!sortState.col) return currentData; return [...currentData].sort((a,b)=>{const av=a[sortState.col],bv=b[sortState.col],an=parseFloat(av),bn=parseFloat(bv);if(!isNaN(an)&&!isNaN(bn)) return sortState.dir==='asc'?an-bn:bn-an;return sortState.dir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));}); }
+document.getElementById('sortDirBtn').addEventListener('click',()=>{if(!sortState.col)return;sortState.dir=sortState.dir==='asc'?'desc':'asc';document.getElementById('sortDirBtn').textContent=`${sortState.dir==='asc'?'↑':'↓'} ${sortState.dir.toUpperCase()}`;renderComparisonTable(getSortedData());});
+document.getElementById('sortColumnSelect').addEventListener('change',e=>{sortState.col=e.target.value||null;renderComparisonTable(getSortedData());});
+document.getElementById('comparisonTableSearch').addEventListener('keyup',e=>{const q=e.target.value.toLowerCase();let count=0;document.querySelectorAll('#comparisonTableBody tr').forEach(tr=>{const show=tr.innerText.toLowerCase().includes(q);tr.style.display=show?'':'none';if(show)count++;});document.getElementById('comparisonRowCount').textContent=`Showing ${count} of ${currentData.length} rows (filtered)`;});
+document.getElementById('closeComparisonBtn').addEventListener('click',()=>document.getElementById('tableComparisonSection').classList.add('hidden'));
+
+/* ═══════════════════════════════════
+   EXPORTS
+═══════════════════════════════════ */
+function exportExcel() { if(!currentData.length) return alert('Upload data first.'); const ws=XLSX.utils.json_to_sheet(currentData),wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Data');XLSX.writeFile(wb,`export-${Date.now()}.xlsx`);botStatus.textContent='Exported as Excel'; }
+document.getElementById('exportExcelBtn').addEventListener('click',exportExcel);
+document.getElementById('exportExcelBtnMain').addEventListener('click',exportExcel);
+
+document.getElementById('downloadDataBtn').addEventListener('click',()=>{
+  if(!currentData.length) return alert('Upload data first.');
+  const headers=Object.keys(currentData[0]);
+  let csv=headers.join(',')+'\n';
+  currentData.forEach(row=>{csv+=headers.map(h=>{const v=String(row[h]||'').replace(/"/g,'""');return v.includes(',')?`"${v}"`:v;}).join(',')+'\n';});
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download=`export-${Date.now()}.csv`;a.click();
+  botStatus.textContent='CSV exported';
+});
+
+document.getElementById('exportPdfBtn').addEventListener('click',()=>{
+  const msgs=Array.from(chatMessages.querySelectorAll('.flex'));
+  if(!msgs.length) return alert('No chat to export.');
+  let html=`<div style="font-family:Arial;color:#333;padding:20px"><h1 style="color:#0ea5e9">VizChat Export</h1><p style="color:#666">${new Date().toLocaleString()}</p><hr>`;
+  msgs.forEach(m=>{const isUser=m.classList.contains('justify-end');html+=`<div style="margin:12px 0;padding:10px;background:${isUser?'#e0f2fe':'#f3f4f6'};border-left:3px solid ${isUser?'#0ea5e9':'#9ca3af'};border-radius:4px"><strong>${isUser?'You':'Bot'}:</strong><p style="margin:6px 0;white-space:pre-wrap">${m.innerText}</p></div>`;});
+  html+='</div>';
+  const el=document.createElement('div');el.innerHTML=html;
+  html2pdf().set({margin:10,filename:`chat-${Date.now()}.pdf`,html2canvas:{scale:2},jsPDF:{orientation:'portrait',unit:'mm',format:'a4'}}).from(el).save();
+});
+
+/* ═══════════════════════════════════
+   MISC
+═══════════════════════════════════ */
+document.getElementById('clearChatBtn').addEventListener('click',()=>{if(!confirm('Clear all chat messages?'))return;chatMessages.innerHTML='';addChatMessage('bot','🧹 Chat cleared. Ready for new questions!');document.querySelectorAll('#dataPreview tbody tr.cross-highlight').forEach(tr=>tr.classList.remove('cross-highlight'));});
+
+document.getElementById('saveBotBtn').addEventListener('click',()=>{
+  if(!currentData.length) return alert('Upload data first.');
+  const name=prompt('Bot name:'); if(!name) return;
+  const saved=JSON.parse(localStorage.getItem('savedBots')||'[]');
+  saved.push({name,data:currentData,fileName:uploadedFile?.name,createdAt:new Date().toISOString(),type:'data-driven',alerts:alertRules,roles:rlsRoles});
+  localStorage.setItem('savedBots',JSON.stringify(saved));
+  alert('Bot saved!'); botStatus.textContent='Bot saved ✓';
+});
+
+function getMedian(arr) { if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b),m=Math.floor(s.length/2); return s.length%2?s[m]:(s[m-1]+s[m])/2; }
+function getStdDev(arr) { if(!arr.length) return 0; const mean=arr.reduce((a,b)=>a+b,0)/arr.length; return Math.sqrt(arr.reduce((a,b)=>a+Math.pow(b-mean,2),0)/arr.length); }
+function formatNum(n) { if(isNaN(n)) return 'N/A'; if(Math.abs(n)>=1e6) return (n/1e6).toFixed(2)+'M'; if(Math.abs(n)>=1e3) return (n/1e3).toFixed(2)+'K'; return Number(n.toFixed(2)).toLocaleString(); }
+
+</script>
+</body>
+</html>

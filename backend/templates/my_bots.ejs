@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bots | VizChat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --sky: #38bdf8; --sky-dark: #0ea5e9; --indigo: #6366f1; --indigo-mid: #4f46e5;
+      --emerald: #10b981; --amber: #f59e0b; --red: #ef4444; --purple: #a78bfa;
+      --surface: #060b14; --s2: #0b1019; --s3: #101620; --s4: #161e2e;
+      --border: rgba(255,255,255,0.07); --border-mid: rgba(255,255,255,0.12);
+      --text: #eef5ff; --text-2: #7a90b4; --text-3: #3b4f6e;
+    }
+    html, body { background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+    body { padding-top: 66px; min-height: 100vh; }
+
+    /* ── BG ── */
+    .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background: radial-gradient(ellipse 60% 50% at 5% 85%, rgba(56,189,248,0.07) 0%, transparent 55%),
+                  radial-gradient(ellipse 55% 45% at 95% 10%, rgba(99,102,241,0.08) 0%, transparent 55%); }
+    .bg-grid { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(255,255,255,0.016) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.016) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 40%, black 20%, transparent 80%); }
+
+    /* ── Header ── */
+    header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(6,11,20,0.88); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .hdr { max-width: 1400px; margin: 0 auto; padding: 0 24px; height: 66px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-box { width: 36px; height: 36px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px rgba(56,189,248,0.2), 0 6px 18px rgba(14,165,233,0.18); flex-shrink: 0; }
+    .logo-box svg { width: 18px; height: 18px; color: #fff; }
+    .logo-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.03em; color: var(--text); }
+    .logo-name span { color: var(--sky); }
+    .hdr-right { display: flex; align-items: center; gap: 8px; }
+    .btn-sm { padding: 7px 14px; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all .2s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-sky { background: var(--sky-dark); color: #fff; }
+    .btn-sky:hover { background: #0284c7; transform: translateY(-1px); }
+    .btn-ghost { background: rgba(255,255,255,0.05); color: var(--text-2); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: rgba(255,255,255,0.09); color: var(--text); }
+    .user-badge { display: flex; align-items: center; gap: 7px; padding: 5px 10px; border-radius: 7px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); font-size: 12px; color: var(--text-2); }
+    .user-avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; }
+
+    /* ── Main ── */
+    .main { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 30px 24px 70px; }
+
+    /* ── Page header ── */
+    .page-hdr { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-bottom: 28px; }
+    .page-eyebrow { display: inline-flex; align-items: center; gap: 6px; padding: 4px 11px; border-radius: 100px; background: rgba(56,189,248,0.08); border: 1px solid rgba(56,189,248,0.18); font-size: 11px; color: var(--sky); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 8px; }
+    .pe-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--sky); animation: pd 2s ease infinite; }
+    @keyframes pd { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .page-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(22px, 3vw, 30px); letter-spacing: -.03em; color: var(--text); margin-bottom: 5px; }
+    .page-sub { font-size: 13.5px; color: var(--text-2); font-weight: 300; }
+
+    /* Create button */
+    .create-btn { display: flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 11px; background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); border: none; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; text-decoration: none; position: relative; overflow: hidden; transition: all .2s; box-shadow: 0 4px 18px rgba(14,165,233,0.22); white-space: nowrap; }
+    .create-btn:hover { opacity: .9; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(14,165,233,0.3); }
+    .create-btn svg { width: 15px; height: 15px; }
+    .create-btn .shine { position: absolute; top: 0; left: -100%; width: 55%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); transition: left .6s; }
+    .create-btn:hover .shine { left: 160%; }
+
+    /* ── Stats strip ── */
+    .stats-strip { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 24px; }
+    @media(max-width:800px){ .stats-strip{grid-template-columns:repeat(2,1fr)} }
+    .stat-box { background: var(--s2); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; gap: 12px; transition: border-color .2s; }
+    .stat-box:hover { border-color: var(--border-mid); }
+    .stat-icon { width: 36px; height: 36px; border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-icon svg { width: 17px; height: 17px; }
+    .si-sky { background: rgba(56,189,248,.1); color: var(--sky); }
+    .si-green { background: rgba(16,185,129,.1); color: var(--emerald); }
+    .si-purple { background: rgba(167,139,250,.1); color: var(--purple); }
+    .si-amber { background: rgba(245,158,11,.1); color: var(--amber); }
+    .stat-num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 22px; color: var(--text); line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--text-3); margin-top: 2px; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ── Controls row ── */
+    .controls-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 300px; }
+    .search-wrap svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; color: var(--text-3); pointer-events: none; }
+    .search-input { width: 100%; padding: 9px 12px 9px 34px; background: var(--s2); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; transition: border-color .2s; }
+    .search-input::placeholder { color: var(--text-3); }
+    .search-input:focus { border-color: rgba(56,189,248,.4); }
+    .sort-select { padding: 9px 12px; background: var(--s2); border: 1px solid var(--border); border-radius: 9px; color: var(--text-2); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; cursor: pointer; }
+    .view-btn { width: 36px; height: 36px; border-radius: 8px; background: var(--s2); border: 1px solid var(--border); color: var(--text-3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+    .view-btn.on { background: rgba(56,189,248,.08); color: var(--sky); border-color: rgba(56,189,248,.25); }
+    .view-btn:hover:not(.on) { color: var(--text-2); }
+    .view-btn svg { width: 14px; height: 14px; }
+
+    /* ── Bot grid ── */
+    .bots-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+    .bots-grid.list-view { grid-template-columns: 1fr; }
+    @media(max-width:1100px){ .bots-grid:not(.list-view){grid-template-columns:repeat(2,1fr)} }
+    @media(max-width:680px){ .bots-grid{grid-template-columns:1fr !important} }
+
+    /* ── Bot card ── */
+    .bot-card { background: var(--s2); border: 1px solid var(--border); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; position: relative; overflow: hidden; transition: all .25s; animation: fadeUp .35s ease both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+    .bot-card:hover { border-color: var(--border-mid); transform: translateY(-4px); box-shadow: 0 14px 32px rgba(0,0,0,0.28); }
+    .bot-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--sky-dark), var(--indigo)); border-radius: 16px 16px 0 0; opacity: .5; transition: opacity .3s; }
+    .bot-card:hover::before { opacity: 1; }
+
+    /* List view card */
+    .bots-grid.list-view .bot-card { flex-direction: row; align-items: center; gap: 20px; padding: 16px 20px; }
+    .bots-grid.list-view .bot-card::before { display: none; }
+    .bots-grid.list-view .bot-card:hover { transform: translateX(3px); box-shadow: none; }
+    .bots-grid.list-view .bot-main { flex: 1; min-width: 0; }
+    .bots-grid.list-view .bot-stats { display: none; }
+    .bots-grid.list-view .bot-actions { flex-direction: row; margin-top: 0; width: auto; flex-shrink: 0; }
+    .bots-grid.list-view .bot-icon { display: block; flex-shrink: 0; }
+
+    /* Bot card inner */
+    .bot-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .bot-icon { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgba(56,189,248,.15), rgba(99,102,241,.15)); border: 1px solid rgba(56,189,248,.18); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .bot-icon svg { width: 22px; height: 22px; color: var(--sky); }
+    .bot-type-badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 5px; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .btb-data { background: rgba(56,189,248,.1); color: #7dd3fc; border: 1px solid rgba(56,189,248,.2); }
+    .btb-conv { background: rgba(167,139,250,.1); color: #c4b5fd; border: 1px solid rgba(167,139,250,.2); }
+    .pub-badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 5px; font-size: 10px; font-weight: 600; letter-spacing: .04em; }
+    .pb-public { background: rgba(16,185,129,.1); color: #4ade80; border: 1px solid rgba(16,185,129,.2); }
+    .pb-public::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--emerald); animation: pd 1.5s ease infinite; display: inline-block; }
+    .pb-private { background: rgba(255,255,255,.05); color: var(--text-3); border: 1px solid var(--border); }
+
+    .bot-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--text); margin-bottom: 4px; }
+    .bot-meta { font-size: 12px; color: var(--text-3); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .bot-meta span { display: flex; align-items: center; gap: 4px; }
+    .bot-meta svg { width: 11px; height: 11px; }
+
+    /* Mini stats in card */
+    .bot-stats { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-bottom: 16px; }
+    .bs-item { background: var(--s3); border-radius: 8px; padding: 8px 10px; text-align: center; }
+    .bs-num { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; }
+    .bs-lbl { font-size: 10px; color: var(--text-3); margin-top: 2px; text-transform: uppercase; letter-spacing: .04em; }
+    .bs-sky { color: var(--sky); } .bs-green { color: var(--emerald); } .bs-purple { color: var(--purple); }
+
+    /* File tag */
+    .bot-file { display: flex; align-items: center; gap: 6px; padding: 5px 10px; background: var(--s3); border-radius: 7px; font-size: 11.5px; color: var(--text-3); margin-bottom: 14px; width: fit-content; max-width: 100%; overflow: hidden; }
+    .bot-file svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .bot-file span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Card actions */
+    .bot-actions { display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap; }
+    .ba-btn { flex: 1; padding: 9px 8px; border-radius: 9px; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500; cursor: pointer; border: none; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; min-width: 0; }
+    .ba-btn svg { width: 12px; height: 12px; flex-shrink: 0; }
+    .bab-open { background: linear-gradient(135deg, var(--sky-dark), var(--indigo-mid)); color: #fff; box-shadow: 0 3px 12px rgba(14,165,233,.2); }
+    .bab-open:hover { opacity: .9; transform: translateY(-1px); }
+    .bab-share { background: rgba(16,185,129,.08); color: #4ade80; border: 1px solid rgba(16,185,129,.18); }
+    .bab-share:hover { background: rgba(16,185,129,.15); }
+    .bab-private { background: rgba(245,158,11,.08); color: #fcd34d; border: 1px solid rgba(245,158,11,.18); }
+    .bab-private:hover { background: rgba(245,158,11,.15); }
+    .bab-del { width: 36px; height: 36px; padding: 0; flex: none; border-radius: 9px; background: rgba(239,68,68,.08); color: #f87171; border: 1px solid rgba(239,68,68,.18); }
+    .bab-del:hover { background: rgba(239,68,68,.18); }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 72px 24px; background: var(--s2); border: 1px dashed var(--border); border-radius: 20px; }
+    .empty-icon { width: 80px; height: 80px; border-radius: 22px; background: rgba(56,189,248,.07); border: 1px solid rgba(56,189,248,.14); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; }
+    .empty-icon svg { width: 38px; height: 38px; color: var(--sky); }
+    .empty-state h3 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 20px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 13.5px; color: var(--text-3); max-width: 300px; margin: 0 auto 24px; line-height: 1.65; }
+
+    /* ── Delete confirm ── */
+    .confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); backdrop-filter: blur(6px); z-index: 300; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .confirm-overlay.show { display: flex; }
+    .confirm-box { background: var(--s2); border: 1px solid rgba(239,68,68,.25); border-radius: 16px; padding: 28px; max-width: 380px; width: 100%; text-align: center; }
+    .ci { width: 52px; height: 52px; border-radius: 14px; background: rgba(239,68,68,.1); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .ci svg { width: 26px; height: 26px; color: #f87171; }
+    .confirm-box h4 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px; color: var(--text); margin-bottom: 8px; }
+    .confirm-box p { font-size: 13px; color: var(--text-2); line-height: 1.6; margin-bottom: 20px; }
+    .confirm-btns { display: flex; gap: 8px; }
+    .cb-del { flex: 1; padding: 11px; border-radius: 9px; background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.3); color: #f87171; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all .2s; }
+    .cb-del:hover { background: rgba(239,68,68,.25); }
+    .cb-keep { flex: 1; padding: 11px; border-radius: 9px; background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text-2); font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; transition: all .2s; }
+    .cb-keep:hover { background: rgba(255,255,255,.1); color: var(--text); }
+
+    /* ── Toast ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; z-index: 400; display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 11px; font-size: 13px; font-weight: 500; transform: translateY(80px); opacity: 0; transition: all .3s cubic-bezier(.22,1,.36,1); pointer-events: none; max-width: 300px; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-ok { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.25); color: #4ade80; }
+    .toast-info { background: rgba(56,189,248,.12); border: 1px solid rgba(56,189,248,.25); color: #7dd3fc; }
+    .toast svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+  </style>
+</head>
+<body>
+  <div class="bg-mesh"></div>
+  <div class="bg-grid"></div>
+
+  <!-- ── HEADER ── -->
+  <header>
+    <div class="hdr">
+      <a href="/home" class="logo">
+        <div class="logo-box"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+        <span class="logo-name">Viz<span>Chat</span></span>
+      </a>
+      <div class="hdr-right">
+        <div class="user-badge"><div class="user-avatar" id="avatarInitial">D</div><span id="botUsername">Demo User</span></div>
+        <a href="/bot_builder" class="btn-sm btn-ghost">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          New Bot
+        </a>
+        <a href="/home" class="btn-sm btn-sky">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          Home
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+
+    <!-- Page header -->
+    <div class="page-hdr">
+      <div>
+        <div class="page-eyebrow"><span class="pe-dot"></span>My Workspace</div>
+        <h1 class="page-title">My Bots</h1>
+        <p class="page-sub">Launch, share, or manage all your saved chatbots</p>
+      </div>
+      <a href="/bot_builder" class="create-btn">
+        <div class="shine"></div>
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Build New Bot
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-icon si-sky"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>
+        <div><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total Bots</div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon si-green"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-3 3v-3z"/></svg></div>
+        <div><div class="stat-num" id="statChats">0</div><div class="stat-lbl">Conversations</div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon si-purple"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg></div>
+        <div><div class="stat-num" id="statShared">0</div><div class="stat-lbl">Shared</div></div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-icon si-amber"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V7a2 2 0 012-2h5l2 2h5a2 2 0 012 2v5"/></svg></div>
+        <div><div class="stat-num" id="statRows">0</div><div class="stat-lbl">Data Rows</div></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-row">
+      <div class="search-wrap">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <input type="text" class="search-input" id="searchInput" placeholder="Search bots…">
+      </div>
+      <select class="sort-select" id="sortSelect">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="name">Name A–Z</option>
+        <option value="rows">Most rows</option>
+      </select>
+      <select class="sort-select" id="filterType">
+        <option value="all">All types</option>
+        <option value="data-driven">Data-driven</option>
+        <option value="conversational">Conversational</option>
+      </select>
+      <button class="view-btn on" id="gridViewBtn" title="Grid view">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      </button>
+      <button class="view-btn" id="listViewBtn" title="List view">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <!-- Bots grid -->
+    <div class="bots-grid" id="botsGrid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- Delete confirm -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <div class="ci"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></div>
+      <h4>Delete this bot?</h4>
+      <p>The bot and all its data will be permanently removed. This cannot be undone.</p>
+      <div class="confirm-btns">
+        <button class="cb-del" id="confirmDelBtn">Yes, Delete</button>
+        <button class="cb-keep" onclick="closeConfirm()">Keep It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" id="toastIcon"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+    <span id="toastMsg"></span>
+  </div>
+
+<script>
+  // ── State ─────────────────────────────────
+  let currentUser = null;
+  let pendingDeleteId = null;
+  let isListView = false;
+
+  // ── Init ──────────────────────────────────
+  function init() {
+    const stored = sessionStorage.getItem('vcUser');
+    currentUser = stored ? JSON.parse(stored) : { uid: 'u-' + Date.now(), email: 'demo@vizchat.io', displayName: 'Demo User' };
+    sessionStorage.setItem('vcUser', JSON.stringify(currentUser));
+    const name = currentUser.displayName || currentUser.email;
+    document.getElementById('botUsername').textContent = name;
+    document.getElementById('avatarInitial').textContent = name.charAt(0).toUpperCase();
+    bindControls();
+    render();
+  }
+
+  // ── Storage ───────────────────────────────
+  function getBots() { return JSON.parse(localStorage.getItem('vc_bots') || '[]'); }
+  function saveBots(arr) { localStorage.setItem('vc_bots', JSON.stringify(arr)); }
+  function mine() { return getBots(); }
+
+  // ── Toast ─────────────────────────────────
+  let toastT;
+  function toast(msg, type = 'ok') {
+    const el = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    el.className = 'toast show toast-' + type;
+    clearTimeout(toastT);
+    toastT = setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // ── Render ────────────────────────────────
+  function render() {
+    let bots = mine();
+    const q = (document.getElementById('searchInput').value || '').toLowerCase();
+    const sort = document.getElementById('sortSelect').value;
+    const ftype = document.getElementById('filterType').value;
+
+    if (q) bots = bots.filter(b => (b.name || '').toLowerCase().includes(q) || (b.uploadedName || '').toLowerCase().includes(q));
+    if (ftype !== 'all') bots = bots.filter(b => (b.type || 'data-driven') === ftype);
+
+    if (sort === 'newest') bots.sort((a,b) => new Date(b.savedAt) - new Date(a.savedAt));
+    else if (sort === 'oldest') bots.sort((a,b) => new Date(a.savedAt) - new Date(b.savedAt));
+    else if (sort === 'name') bots.sort((a,b) => (a.name||'').localeCompare(b.name||''));
+    else if (sort === 'rows') bots.sort((a,b) => (b.data||[]).length - (a.data||[]).length);
+
+    // Stats
+    const totalRows = bots.reduce((s,b) => s + (b.data||[]).length, 0);
+    const sharedCount = bots.filter(b => b.isPublic).length;
+    const totalChats = bots.reduce((s,b) => s + (b.chatHistory||[]).length, 0);
+    document.getElementById('statTotal').textContent = bots.length;
+    document.getElementById('statChats').textContent = totalChats;
+    document.getElementById('statShared').textContent = sharedCount;
+    document.getElementById('statRows').textContent = totalRows;
+
+    const grid = document.getElementById('botsGrid');
+
+    if (!bots.length) {
+      grid.innerHTML = `
+        <div class="empty-state" style="grid-column:1/-1">
+          <div class="empty-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>
+          <h3>No bots yet</h3>
+          <p>Build your first bot in minutes — upload a dataset or start a conversational bot.</p>
+          <a href="/bot_builder" class="create-btn" style="display:inline-flex;font-size:13px;padding:10px 18px">
+            <div class="shine"></div>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Build Your First Bot
+          </a>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = bots.map((b, i) => {
+      const rows = (b.data||[]).length;
+      const chats = (b.chatHistory||[]).length;
+      const type = b.type || 'data-driven';
+      const isPublic = !!b.isPublic;
+      const date = b.savedAt ? new Date(b.savedAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}) : '—';
+
+      return `
+        <div class="bot-card" style="animation-delay:${i*.05}s">
+          <div class="bot-top">
+            <div class="bot-icon"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg></div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+              <span class="bot-type-badge ${type==='data-driven'?'btb-data':'btb-conv'}">${type==='data-driven'?'Data Bot':'Chat Bot'}</span>
+              <span class="pub-badge ${isPublic?'pb-public':'pb-private'}">${isPublic?'Public':'Private'}</span>
+            </div>
+          </div>
+
+          <div class="bot-main">
+            <div class="bot-name">${b.name || 'Untitled Bot'}</div>
+            <div class="bot-meta">
+              <span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${date}</span>
+              ${b.uploadedName ? `<span><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>${b.uploadedName}</span>` : ''}
+            </div>
+          </div>
+
+          <div class="bot-stats">
+            <div class="bs-item"><div class="bs-num bs-sky">${rows}</div><div class="bs-lbl">Rows</div></div>
+            <div class="bs-item"><div class="bs-num bs-green">${chats}</div><div class="bs-lbl">Chats</div></div>
+            <div class="bs-item"><div class="bs-num bs-purple">${rows>0?Object.keys(b.data[0]||{}).length:0}</div><div class="bs-lbl">Columns</div></div>
+          </div>
+
+          <div class="bot-actions">
+            <button class="ba-btn bab-open" onclick="openBot('${b.name}')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Open Bot
+            </button>
+            <button class="ba-btn ${isPublic?'bab-private':'bab-share'}" onclick="togglePublic('${b.name}')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${isPublic?'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21':'M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z'}"/></svg>
+              ${isPublic ? 'Make Private' : 'Share'}
+            </button>
+            <button class="ba-btn bab-del" onclick="askDelete('${b.name}')" title="Delete bot">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Open bot ──────────────────────────────
+  function openBot(name) {
+    const bots = mine();
+    const b = bots.find(x => x.name === name);
+    if (!b) return;
+    sessionStorage.setItem('templateData', JSON.stringify(b.data || []));
+    sessionStorage.setItem('templateName', b.name);
+    toast('Opening ' + b.name + '…', 'info');
+    setTimeout(() => { window.location.href = '/bot_builder?template=true'; }, 700);
+  }
+
+  // ── Toggle public ─────────────────────────
+  function togglePublic(name) {
+    const bots = mine();
+    const idx = bots.findIndex(x => x.name === name);
+    if (idx < 0) return;
+    bots[idx].isPublic = !bots[idx].isPublic;
+    saveBots(bots);
+    render();
+    toast(bots[idx].isPublic ? 'Bot is now public!' : 'Bot is now private!', 'ok');
+  }
+
+  // ── Delete ────────────────────────────────
+  function askDelete(name) {
+    pendingDeleteId = name;
+    document.getElementById('confirmOverlay').classList.add('show');
+  }
+  function closeConfirm() { document.getElementById('confirmOverlay').classList.remove('show'); pendingDeleteId = null; }
+  document.getElementById('confirmDelBtn').addEventListener('click', () => {
+    if (!pendingDeleteId) return;
+    const bots = mine().filter(b => b.name !== pendingDeleteId);
+    saveBots(bots);
+    closeConfirm();
+    render();
+    toast('Bot deleted.', 'ok');
+  });
+
+  // ── View toggle ───────────────────────────
+  document.getElementById('gridViewBtn').addEventListener('click', () => {
+    isListView = false;
+    document.getElementById('botsGrid').classList.remove('list-view');
+    document.getElementById('gridViewBtn').classList.add('on');
+    document.getElementById('listViewBtn').classList.remove('on');
+  });
+  document.getElementById('listViewBtn').addEventListener('click', () => {
+    isListView = true;
+    document.getElementById('botsGrid').classList.add('list-view');
+    document.getElementById('listViewBtn').classList.add('on');
+    document.getElementById('gridViewBtn').classList.remove('on');
+  });
+
+  // ── Bind controls ─────────────────────────
+  function bindControls() {
+    ['searchInput','sortSelect','filterType'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', render);
+      el.addEventListener('change', render);
+    });
+  }
+
+  // Click outside confirm to close
+  document.getElementById('confirmOverlay').addEventListener('click', function(e) { if (e.target === this) closeConfirm(); });
+
+  document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

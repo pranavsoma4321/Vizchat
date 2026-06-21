@@ -1,0 +1,33 @@
+{
+  "name": "vizchat",
+  "version": "1.0.0",
+  "description": "AI Chatbot Builder Platform",
+  "main": "backend/server.js",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "dotenv": "^17.4.2",
+    "ejs": "^3.1.9",
+    "express": "^4.22.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.5.0",
+    "nodemailer": "^8.0.7",
+    "nodemon": "^3.1.14",
+    "pg": "^8.21.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "keywords": [
+    "chatbot",
+    "ai",
+    "builder",
+    "platform"
+  ],
+  "author": "VizChat Team",
+  "license": "MIT"
+}
