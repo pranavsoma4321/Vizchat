@@ -181,6 +181,114 @@
     .toast svg { width: 14px; height: 14px; flex-shrink: 0; }
 
     ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 1100px) {
+      .bots-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+    }
+
+    @media (max-width: 768px) {
+      body { padding-top: 56px; }
+      .hdr { padding: 0 12px; height: 52px; }
+      .main { padding: 20px 12px 40px; }
+      
+      .page-title { font-size: clamp(18px, 3vw, 24px); }
+      .page-sub { font-size: 12px; }
+      
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+      .stat-box { padding: 12px 14px; gap: 10px; }
+      .stat-icon { width: 32px; height: 32px; }
+      .stat-icon svg { width: 14px; height: 14px; }
+      .stat-num { font-size: 18px; }
+      .stat-lbl { font-size: 10px; }
+      
+      .controls-row { gap: 6px; flex-wrap: wrap; }
+      .search-wrap { min-width: 160px; max-width: none; flex: 1; }
+      
+      .bots-grid { grid-template-columns: 1fr; gap: 12px; }
+      
+      .create-btn { padding: 10px 16px; font-size: 13px; }
+      .create-btn svg { width: 13px; height: 13px; }
+      
+      .btn-sm { padding: 6px 12px; font-size: 12px; }
+      
+      .user-badge { font-size: 11px; }
+    }
+
+    @media (max-width: 600px) {
+      .main { padding: 16px 10px 30px; }
+      
+      .page-hdr { flex-direction: column; align-items: flex-start; }
+      .page-title { font-size: 18px; }
+      
+      .hdr { padding: 0 10px; }
+      .logo-name { font-size: 16px; }
+      .hdr-right { gap: 6px; }
+      
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .stat-box { padding: 10px 12px; }
+      .stat-num { font-size: 16px; }
+      
+      .controls-row { gap: 4px; }
+      .search-wrap { min-width: 100%; }
+      .search-input { padding: 8px 10px; font-size: 12px; }
+      
+      .bot-card { padding: 16px; border-radius: 12px; }
+      .bot-card-top { gap: 8px; }
+      .bot-status { font-size: 9px; padding: 2px 7px; }
+      .bot-icon { width: 32px; height: 32px; }
+      
+      .bot-title { font-size: 14px; }
+      .bot-desc { font-size: 11px; }
+      .bot-meta { gap: 5px; }
+      .bot-chip { font-size: 10px; padding: 3px 8px; }
+      
+      .bot-actions { gap: 4px; }
+      .b-btn { padding: 8px 10px; font-size: 11px; }
+      .b-btn svg { width: 10px; height: 10px; }
+      
+      .empty-state { padding: 40px 16px; }
+      .empty-icon { width: 56px; height: 56px; }
+      .empty-state h3 { font-size: 16px; }
+      
+      button, input, select { min-height: 44px; }
+    }
+
+    @media (max-width: 480px) {
+      .main { padding: 12px 8px 20px; }
+      
+      body { font-size: 13px; }
+      
+      .page-title { font-size: 16px; }
+      .page-eyebrow { font-size: 9px; padding: 3px 8px; }
+      
+      .hdr { height: 48px; padding: 0 8px; }
+      .logo-box { width: 28px; height: 28px; }
+      .logo-name { font-size: 14px; }
+      
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+      .stat-box { padding: 8px 10px; }
+      .stat-num { font-size: 14px; }
+      .stat-lbl { font-size: 9px; }
+      
+      .search-input { width: 100%; max-width: none; }
+      
+      .bots-grid { gap: 10px; }
+      
+      .bot-card { padding: 12px; }
+      .bot-icon { width: 28px; height: 28px; }
+      .bot-title { font-size: 13px; }
+      .bot-desc { display: none; }
+      .bot-meta { flex-wrap: wrap; gap: 4px; }
+      .bot-chip { font-size: 9px; }
+      
+      .b-btn { padding: 7px 8px; font-size: 10px; }
+      
+      .empty-state { padding: 30px 12px; }
+      .empty-icon { width: 48px; height: 48px; margin-bottom: 12px; }
+      .empty-state h3 { font-size: 14px; margin-bottom: 6px; }
+      .empty-state p { font-size: 11px; }
+    }
   </style>
 </head>
 <body>

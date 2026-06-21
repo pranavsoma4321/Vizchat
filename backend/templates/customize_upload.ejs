@@ -34,6 +34,43 @@
             background-image: linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
             background-size: 2rem 2rem;
         }
+
+        /* ── Mobile Responsive ── */
+        @media (max-width: 768px) {
+            body { padding-top: 56px; font-size: 14px; }
+            .glass-nav { height: 52px; padding: 0 12px; }
+            main { padding: 20px 12px 40px; }
+            .max-w-4xl { max-width: 100%; }
+            .text-4xl { font-size: 24px; }
+            .text-lg { font-size: 14px; }
+            .grid-cols-2 { grid-template-columns: 1fr; }
+            input, textarea, button { min-height: 44px; font-size: 16px; }
+            .px-6 { padding-left: 12px; padding-right: 12px; }
+        }
+
+        @media (max-width: 600px) {
+            body { font-size: 13px; }
+            .glass-nav { height: 48px; padding: 0 10px; }
+            main { padding: 16px 10px 30px; }
+            .text-3xl { font-size: 18px; }
+            .text-base { font-size: 12px; }
+            .gap-6 { gap: 12px; }
+            .p-6 { padding: 12px; }
+            .rounded-lg { border-radius: 10px; }
+            button { min-height: 44px; }
+        }
+
+        @media (max-width: 480px) {
+            body { font-size: 12px; }
+            .glass-nav { height: 44px; padding: 0 8px; }
+            main { padding: 12px 8px 20px; }
+            .text-3xl { font-size: 16px; }
+            .text-sm { font-size: 11px; }
+            .gap-4 { gap: 8px; }
+            .p-4 { padding: 8px; }
+            .rounded-lg { border-radius: 8px; }
+            input, textarea, button { min-height: 40px; }
+        }
     </style>
 </head>
 

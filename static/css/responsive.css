@@ -198,53 +198,69 @@ pre {
   .stats-card {
     padding: 0.5rem !important;
   }
-  
-  .stats-card .text-lg,
-  .stats-card .text-2xl {
-    font-size: 1rem !important;
+}
+
+/* Mobile-specific responsive utilities */
+@media (max-width: 768px) {
+  /* Improved headers on mobile */
+  h1 { font-size: clamp(1.5rem, 5vw, 2.25rem); }
+  h2 { font-size: clamp(1.25rem, 4vw, 1.875rem); }
+  h3 { font-size: clamp(1rem, 3vw, 1.5rem); }
+  h4 { font-size: clamp(0.875rem, 2.5vw, 1.125rem); }
+
+  /* Better padding on mobile */
+  .px-6 { padding-left: 1rem; padding-right: 1rem; }
+  .py-6 { padding-top: 1rem; padding-bottom: 1rem; }
+  .p-6 { padding: 1rem; }
+
+  /* Improved forms on mobile */
+  input, textarea, select {
+    min-height: 44px;
+    font-size: 16px;
   }
-  
-  .stats-card .text-xs {
-    font-size: 0.625rem !important;
-  }
-  
-  /* Data Table */
-  .data-table {
-    font-size: 0.625rem !important;
-  }
-  
-  .data-table table {
-    min-width: 300px !important;
-  }
-  
-  .data-table th,
-  .data-table td {
-    padding: 0.25rem 0.375rem !important;
-    font-size: 0.625rem !important;
-  }
-  
-  /* Chat Interface */
-  .chat-container {
-    min-height: 200px !important;
-    max-height: 250px !important;
-  }
-  
-  .chat-container .text-sm {
-    font-size: 0.75rem !important;
-  }
-  
-  .chat-container .text-xs {
-    font-size: 0.625rem !important;
-  }
-  
-  /* Chat Input */
-  .flex.gap-2 input {
-    font-size: 0.875rem !important;
-    padding: 0.5rem !important;
-  }
-  
-  .flex.gap-2 button {
-    padding: 0.5rem 0.75rem !important;
+
+  /* Better buttons on mobile */
+  button { min-height: 44px; }
+
+  /* Grid improvements */
+  .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-cols-4 { grid-template-columns: repeat(2, 1fr); }
+
+  /* Flex wrap on mobile */
+  .flex.gap-4 { flex-wrap: wrap; }
+  .flex.gap-6 { flex-wrap: wrap; }
+
+  /* Better card spacing */
+  .rounded-lg { border-radius: 0.75rem; }
+  .rounded-xl { border-radius: 0.875rem; }
+
+  /* Improved navigation */
+  nav { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  /* Extra small screen utilities */
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1rem; }
+
+  /* Minimal padding on very small screens */
+  .px-6 { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .py-6 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+
+  /* Full width elements */
+  .w-full { width: 100%; }
+
+  /* Single column grids */
+  .grid-cols-2 { grid-template-columns: 1fr; }
+  .grid-cols-3 { grid-template-columns: 1fr; }
+  .grid-cols-4 { grid-template-columns: 1fr; }
+
+  /* Improved spacing */
+  .gap-4 { gap: 0.5rem; }
+  .gap-6 { gap: 0.75rem; }
+  .gap-8 { gap: 1rem; }
+}
     font-size: 0.75rem !important;
   }
   

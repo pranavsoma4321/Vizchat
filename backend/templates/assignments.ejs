@@ -226,6 +226,128 @@
     @keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
     .a-card { animation: fadeUp .35s ease both; }
     ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-thumb { background: rgba(255,255,255,.08); border-radius: 2px; }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 1100px) {
+      .assignments-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 768px) {
+      body { padding-top: 56px; }
+      .hdr { padding: 0 12px; height: 52px; }
+      .main { padding: 20px 12px 40px; }
+      
+      .page-title { font-size: clamp(18px, 3vw, 24px); }
+      .page-sub { font-size: 12px; }
+      
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+      .stat-box { padding: 12px 14px; gap: 10px; }
+      .stat-icon { width: 32px; height: 32px; }
+      .stat-icon svg { width: 14px; height: 14px; }
+      .stat-num { font-size: 18px; }
+      .stat-lbl { font-size: 10px; }
+      
+      .filters-row { gap: 6px; flex-wrap: wrap; }
+      .search-wrap { min-width: 160px; max-width: none; flex: 1; }
+      .filter-select { padding: 8px 10px; font-size: 12px; }
+      .filter-btn { padding: 7px 12px; font-size: 11px; }
+      
+      .assignments-grid { grid-template-columns: 1fr; gap: 12px; }
+      
+      .create-btn { padding: 10px 16px; font-size: 13px; }
+      .create-btn svg { width: 13px; height: 13px; }
+    }
+
+    @media (max-width: 700px) {
+      .assignments-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .main { padding: 16px 10px 30px; }
+      
+      .page-hdr { flex-direction: column; align-items: flex-start; }
+      .page-title { font-size: 18px; }
+      
+      .hdr { padding: 0 10px; height: 48px; }
+      .logo-name { font-size: 16px; }
+      .hdr-right { gap: 6px; }
+      
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .stat-box { padding: 10px 12px; }
+      .stat-num { font-size: 16px; }
+      
+      .filters-row { gap: 4px; }
+      .search-wrap { min-width: 100%; }
+      .search-input { padding: 8px 10px; font-size: 12px; }
+      
+      .a-card { padding: 16px; border-radius: 12px; }
+      .a-card-top { gap: 8px; }
+      .a-status { font-size: 9px; padding: 2px 7px; }
+      
+      .a-title { font-size: 14px; }
+      .a-desc { font-size: 11px; }
+      .a-meta { gap: 5px; }
+      .a-chip { font-size: 10px; padding: 3px 8px; }
+      
+      .a-questions { padding: 8px 10px; }
+      .a-q-label { font-size: 9px; }
+      .a-q-item { font-size: 11px; }
+      
+      .a-progress { margin-bottom: 10px; }
+      .a-prog-hdr { font-size: 10px; }
+      
+      .a-actions { gap: 4px; }
+      .a-btn { padding: 8px 10px; font-size: 11px; }
+      .a-btn svg { width: 10px; height: 10px; }
+      
+      .empty-state { padding: 40px 16px; }
+      .empty-icon { width: 56px; height: 56px; }
+      .empty-state h3 { font-size: 16px; }
+      
+      button, input, select { min-height: 44px; }
+    }
+
+    @media (max-width: 480px) {
+      .main { padding: 12px 8px 20px; }
+      
+      body { font-size: 13px; }
+      
+      .page-title { font-size: 16px; }
+      .page-eyebrow { font-size: 9px; padding: 3px 8px; }
+      
+      .hdr { height: 48px; padding: 0 8px; }
+      .logo-box { width: 28px; height: 28px; }
+      .logo-name { font-size: 14px; }
+      
+      .stats-strip { grid-template-columns: repeat(2, 1fr); gap: 4px; }
+      .stat-box { padding: 8px 10px; }
+      .stat-num { font-size: 14px; }
+      .stat-lbl { font-size: 9px; }
+      
+      .search-input { width: 100%; max-width: none; }
+      
+      .assignments-grid { gap: 10px; }
+      
+      .a-card { padding: 12px; }
+      .a-card-top { flex-direction: column; gap: 6px; }
+      .a-title { font-size: 13px; }
+      .a-desc { font-size: 10px; -webkit-line-clamp: 1; }
+      .a-meta { flex-wrap: wrap; gap: 4px; }
+      .a-chip { font-size: 9px; }
+      
+      .a-questions { display: none; }
+      
+      .a-progress { margin-bottom: 8px; }
+      .a-prog-hdr { font-size: 9px; }
+      
+      .a-actions { gap: 3px; }
+      .a-btn { padding: 7px 8px; font-size: 10px; }
+      
+      .empty-state { padding: 30px 12px; }
+      .empty-icon { width: 48px; height: 48px; margin-bottom: 12px; }
+      .empty-state h3 { font-size: 14px; margin-bottom: 6px; }
+      .empty-state p { font-size: 11px; }
+    }
   </style>
 </head>
 <body>

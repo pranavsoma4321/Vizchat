@@ -217,6 +217,82 @@
       line-height: 1.6;
     }
     .terms a { color: #888; }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+
+      .card {
+        padding: 1.75rem 1.5rem 1.5rem;
+        border-radius: 16px;
+      }
+
+      .blob-1 { width: 140px; height: 140px; top: -40px; right: -40px; }
+      .blob-2 { width: 80px; height: 80px; bottom: -30px; left: -30px; }
+
+      h1 { font-size: 20px; }
+      .subtitle { font-size: 13px; }
+
+      .icon-wrap { width: 40px; height: 40px; }
+      .icon-wrap i { font-size: 18px; }
+
+      input {
+        padding: 10px 12px 10px 36px;
+        font-size: 16px;
+        border-radius: 8px;
+      }
+
+      .btn-primary {
+        padding: 12px;
+        font-size: 14px;
+      }
+
+      .field { margin-bottom: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 0.75rem;
+      }
+
+      .card {
+        padding: 1.5rem 1.25rem 1rem;
+        border-radius: 12px;
+      }
+
+      .header { margin-bottom: 1.5rem; }
+
+      h1 { font-size: 18px; }
+      .subtitle { font-size: 12px; }
+
+      .btn-primary {
+        min-height: 44px;
+        font-size: 14px;
+      }
+
+      .btn-oauth {
+        min-height: 44px;
+        font-size: 12px;
+      }
+
+      input {
+        min-height: 44px;
+        padding: 10px 12px 10px 36px;
+      }
+
+      .field { margin-bottom: 10px; }
+
+      .field-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .forgot-link { margin-top: 0.25rem; }
+
+      .terms { font-size: 10px; }
+    }
   </style>
 </head>
 <body>

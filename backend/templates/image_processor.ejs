@@ -83,6 +83,47 @@
       transform: translateY(-4px);
       box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
     }
+
+    /* ── Mobile Responsive ── */
+    @media (max-width: 900px) {
+      body { padding-top: 56px; }
+      main { padding: 24px 12px 40px; }
+      .grid-cols-3 { grid-template-columns: repeat(2, 1fr); }
+      .grid-cols-2 { grid-template-columns: 1fr; }
+      h1 { font-size: 24px; }
+      h2 { font-size: 18px; }
+      input, button { min-height: 44px; font-size: 14px; }
+    }
+
+    @media (max-width: 768px) {
+      body { font-size: 13px; padding-top: 52px; }
+      main { padding: 16px 10px 30px; }
+      .grid-cols-2, .grid-cols-3 { grid-template-columns: 1fr; }
+      h1 { font-size: 18px; }
+      h2 { font-size: 15px; }
+      .p-6 { padding: 12px; }
+      .gap-4 { gap: 10px; }
+      .feature-card { padding: 12px; }
+      input, button, textarea { min-height: 44px; font-size: 13px; }
+    }
+
+    @media (max-width: 600px) {
+      body { font-size: 12px; }
+      main { padding: 12px 8px 20px; }
+      h1 { font-size: 16px; }
+      h2 { font-size: 14px; }
+      .text-lg { font-size: 12px; }
+      .feature-card { padding: 10px; }
+      input, button { min-height: 40px; font-size: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      body { font-size: 11px; }
+      main { padding: 10px 6px 16px; }
+      h1 { font-size: 14px; }
+      h2 { font-size: 12px; }
+      input, button { min-height: 38px; font-size: 11px; }
+    }
   </style>
 </head>
 

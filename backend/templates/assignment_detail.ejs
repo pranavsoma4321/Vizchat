@@ -24,6 +24,37 @@
 
     .glass-nav { background: rgba(17, 24, 39, 0.6); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 
+    /* ── Mobile Responsive ── */
+    @media (max-width: 768px) {
+      body { padding-top: 56px; font-size: 13px; }
+      main { padding: 20px 12px 40px; }
+      .max-w-4xl { max-width: 100%; }
+      .grid-cols-2 { grid-template-columns: 1fr; }
+      .text-3xl, .text-4xl { font-size: clamp(18px, 3vw, 24px); }
+      input, button, textarea { min-height: 44px; font-size: 14px; }
+    }
+
+    @media (max-width: 600px) {
+      body { font-size: 12px; }
+      main { padding: 16px 10px 30px; }
+      .text-3xl { font-size: 18px; }
+      .text-2xl { font-size: 16px; }
+      .text-lg { font-size: 13px; }
+      .p-6 { padding: 12px; }
+      .gap-4 { gap: 10px; }
+      button, input { min-height: 44px; font-size: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      body { font-size: 11px; }
+      main { padding: 12px 8px 20px; }
+      .text-3xl { font-size: 16px; }
+      .text-2xl { font-size: 14px; }
+      .text-base { font-size: 11px; }
+      .gap-3 { gap: 6px; }
+      button, input { min-height: 40px; }
+    }
+
   </style>
 
 </head>
